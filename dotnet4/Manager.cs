@@ -352,12 +352,24 @@ namespace jxshell.dotnet4
 			}
 		}
 
-		public typeDescriptor loadType(string typeName)
-		{
-			return typeDescriptor.loadFromType(this.getTypeOrGenericType(typeName));
-		}
+        public typeDescriptor loadType(string typeName)
+        {
+            return typeDescriptor.loadFromType(this.getTypeOrGenericType(typeName));
+        }
 
-		public void registerVFPClassToDotnet(string code, string vfpclassname, string netclassName)
+        public typeDescriptor loadTypeNoCompile(string typeName)
+        {
+            Type t = this.getTypeOrGenericType(typeName);
+            string name = typeDescriptor.getNameForType(t);
+            return typeDescriptor.loadFromType(t,name,false);
+        }
+
+        public VFPHelper vfpHelper(typeDescriptor typeD)
+        {
+            return new VFPHelper(typeD);
+        }
+
+        public void registerVFPClassToDotnet(string code, string vfpclassname, string netclassName)
 		{
 		}
 

@@ -1,245 +1,351 @@
+﻿using jxshell;
+using jxshell.dotnet4;
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace jxshell.dotnet4
 {
-	[ComVisible(true)]
-	public class invoker
-	{
-		public object executer;
+    public class invoker
+    {
+        private Manager manager;
 
-		protected invokerparam0[] invokerparams0;
+        public Dictionary<string, object> values = new Dictionary<string, object>();
 
-		protected invokerparam1[] invokerparams1;
+        public Dictionary<string, object> scopeExceptions = new Dictionary<string, object>();
 
-		protected invokerparam2[] invokerparams2;
+        public static Dictionary<string, invokerparam0> invokerparam0_pdict;
 
-		protected invokerparam3[] invokerparams3;
+        public static Dictionary<string, invokerparam1> invokerparam1_pdict;
 
-		protected invokerparam4[] invokerparams4;
+        public static Dictionary<string, invokerparam2> invokerparam2_pdict;
 
-		protected invokerparam5[] invokerparams5;
+        public static Dictionary<string, invokerparam0> invokerparam0_dict;
 
-		protected invokerparam6[] invokerparams6;
+        public static Dictionary<string, invokerparam1> invokerparam1_dict;
 
-		protected invokerparam7[] invokerparams7;
+        public static Dictionary<string, invokerparam2> invokerparam2_dict;
 
-		protected invokerparam8[] invokerparams8;
+        public static Dictionary<string, invokerparam3> invokerparam3_dict;
 
-		protected invokerparam9[] invokerparams9;
+        public static Dictionary<string, invokerparam4> invokerparam4_dict;
 
-		public invoker()
-		{
-		}
+        public static Dictionary<string, invokerparam5> invokerparam5_dict;
 
-		public virtual invoker __construct(object o)
-		{
-			return null;
-		}
+        public static Dictionary<string, invokerparam6> invokerparam6_dict;
 
-		public invokerparam0 __getParam0(int index)
-		{
-			return this.__getParam0(index, false);
-		}
+        public static Dictionary<string, invokerparam7> invokerparam7_dict;
 
-		public invokerparam0 __getParam0(int index, bool p)
-		{
-			if (this.invokerparams0 == null)
-			{
-				this.invokerparams0 = new invokerparam0[(int)this.IMethods().Length];
-			}
-			invokerparam0 invokerparam = this.invokerparams0[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam0(this.IMethods()[index], p);
-				this.invokerparams0[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public static Dictionary<string, invokerparam8> invokerparam8_dict;
 
-		public invokerparam1 __getParam1(int index)
-		{
-			return this.__getParam1(index, false);
-		}
+        public static Dictionary<string, invokerparam9> invokerparam9_dict;
 
-		public invokerparam1 __getParam1(int index, bool p)
-		{
-			if (this.invokerparams1 == null)
-			{
-				this.invokerparams1 = new invokerparam1[(int)this.IMethods().Length];
-			}
-			invokerparam1 invokerparam = this.invokerparams1[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam1(this.IMethods()[index], p);
-				this.invokerparams1[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public Action<string> continue1;
 
-		public invokerparam2 __getParam2(int index)
-		{
-			return this.__getParam2(index, false);
-		}
+       
+        static invoker()
+        {
+            invokerparam0_pdict = new Dictionary<string, invokerparam0>();
+            invokerparam1_pdict = new Dictionary<string, invokerparam1>();
+            invokerparam2_pdict = new Dictionary<string, invokerparam2>();
+            invokerparam0_dict = new Dictionary<string, invokerparam0>();
+            invokerparam1_dict = new Dictionary<string, invokerparam1>();
+            invokerparam2_dict = new Dictionary<string, invokerparam2>();
+            invokerparam3_dict = new Dictionary<string, invokerparam3>();
+            invokerparam4_dict = new Dictionary<string, invokerparam4>();
+            invokerparam5_dict = new Dictionary<string, invokerparam5>();
+            invokerparam6_dict = new Dictionary<string, invokerparam6>();
+            invokerparam7_dict = new Dictionary<string, invokerparam7>();
+            invokerparam8_dict = new Dictionary<string, invokerparam8>();
+            invokerparam9_dict = new Dictionary<string, invokerparam9>();
+        }
 
-		public invokerparam2 __getParam2(int index, bool p)
-		{
-			if (this.invokerparams2 == null)
-			{
-				this.invokerparams2 = new invokerparam2[(int)this.IMethods().Length];
-			}
-			invokerparam2 invokerparam = this.invokerparams2[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam2(this.IMethods()[index], p);
-				this.invokerparams2[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public invoker()
+        {
+            //this.values["@command"] = this;
+            if (this.manager == null)
+            {
+                this.manager = Manager.lastManager;             
+            }            
+        }
 
-		public invokerparam3 __getParam3(int index)
-		{
-			return this.__getParam3(index, false);
-		}
+       
 
-		public invokerparam3 __getParam3(int index, bool p)
-		{
-			if (this.invokerparams3 == null)
-			{
-				this.invokerparams3 = new invokerparam3[(int)this.IMethods().Length];
-			}
-			invokerparam3 invokerparam = this.invokerparams3[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam3(this.IMethods()[index], p);
-				this.invokerparams3[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public invokerparam0 GetInvokerparam0(string method)
+        {
+            invokerparam0 inv = null;
+            if (!invoker.invokerparam0_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam0(method);
+                invoker.invokerparam0_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam4 __getParam4(int index)
-		{
-			return this.__getParam4(index, false);
-		}
+        public invokerparam0 GetInvokerparam0P(string method)
+        {
+            invokerparam0 inv = null;
+            if (!invoker.invokerparam0_pdict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam0(method, true);
+                invoker.invokerparam0_pdict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam4 __getParam4(int index, bool p)
-		{
-			if (this.invokerparams4 == null)
-			{
-				this.invokerparams4 = new invokerparam4[(int)this.IMethods().Length];
-			}
-			invokerparam4 invokerparam = this.invokerparams4[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam4(this.IMethods()[index], p);
-				this.invokerparams4[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public invokerparam1 GetInvokerparam1(string method)
+        {
+            invokerparam1 inv = null;
+            if (!invoker.invokerparam1_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam1(method);
+                invoker.invokerparam1_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam5 __getParam5(int index)
-		{
-			return this.__getParam5(index, false);
-		}
+        public invokerparam1 GetInvokerparam1P(string method)
+        {
+            invokerparam1 inv = null;
+            if (!invoker.invokerparam1_pdict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam1(method, true);
+                invoker.invokerparam1_pdict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam5 __getParam5(int index, bool p)
-		{
-			if (this.invokerparams5 == null)
-			{
-				this.invokerparams5 = new invokerparam5[(int)this.IMethods().Length];
-			}
-			invokerparam5 invokerparam = this.invokerparams5[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam5(this.IMethods()[index], p);
-				this.invokerparams5[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public invokerparam2 GetInvokerparam2(string method)
+        {
+            invokerparam2 inv = null;
+            if (!invoker.invokerparam2_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam2(method);
+                invoker.invokerparam2_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam6 __getParam6(int index)
-		{
-			return this.__getParam6(index, false);
-		}
+        public invokerparam2 GetInvokerparam2P(string method)
+        {
+            invokerparam2 inv = null;
+            if (!invoker.invokerparam2_pdict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam2(method, true);
+                invoker.invokerparam2_pdict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam6 __getParam6(int index, bool p)
-		{
-			if (this.invokerparams6 == null)
-			{
-				this.invokerparams6 = new invokerparam6[(int)this.IMethods().Length];
-			}
-			invokerparam6 invokerparam = this.invokerparams6[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam6(this.IMethods()[index], p);
-				this.invokerparams6[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public invokerparam3 GetInvokerparam3(string method)
+        {
+            invokerparam3 inv = null;
+            if (!invoker.invokerparam3_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam3(method);
+                invoker.invokerparam3_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam7 __getParam7(int index)
-		{
-			return this.__getParam7(index, false);
-		}
+        public invokerparam4 GetInvokerparam4(string method)
+        {
+            invokerparam4 inv = null;
+            if (!invoker.invokerparam4_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam4(method);
+                invoker.invokerparam4_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam7 __getParam7(int index, bool p)
-		{
-			if (this.invokerparams7 == null)
-			{
-				this.invokerparams7 = new invokerparam7[(int)this.IMethods().Length];
-			}
-			invokerparam7 invokerparam = this.invokerparams7[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam7(this.IMethods()[index], p);
-				this.invokerparams7[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public invokerparam5 GetInvokerparam5(string method)
+        {
+            invokerparam5 inv = null;
+            if (!invoker.invokerparam5_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam5(method);
+                invoker.invokerparam5_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam8 __getParam8(int index)
-		{
-			return this.__getParam8(index, false);
-		}
+        public invokerparam6 GetInvokerparam6(string method)
+        {
+            invokerparam6 inv = null;
+            if (!invoker.invokerparam6_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam6(method);
+                invoker.invokerparam6_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam8 __getParam8(int index, bool p)
-		{
-			if (this.invokerparams8 == null)
-			{
-				this.invokerparams8 = new invokerparam8[(int)this.IMethods().Length];
-			}
-			invokerparam8 invokerparam = this.invokerparams8[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam8(this.IMethods()[index], p);
-				this.invokerparams8[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public invokerparam7 GetInvokerparam7(string method)
+        {
+            invokerparam7 inv = null;
+            if (!invoker.invokerparam7_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam7(method);
+                invoker.invokerparam7_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam9 __getParam9(int index)
-		{
-			return this.__getParam9(index, false);
-		}
+        public invokerparam8 GetInvokerparam8(string method)
+        {
+            invokerparam8 inv = null;
+            if (!invoker.invokerparam8_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam8(method);
+                invoker.invokerparam8_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public invokerparam9 __getParam9(int index, bool p)
-		{
-			if (this.invokerparams9 == null)
-			{
-				this.invokerparams9 = new invokerparam9[(int)this.IMethods().Length];
-			}
-			invokerparam9 invokerparam = this.invokerparams9[index];
-			if (invokerparam == null)
-			{
-				invokerparam = new invokerparam9(this.IMethods()[index], p);
-				this.invokerparams9[index] = invokerparam;
-			}
-			return invokerparam;
-		}
+        public invokerparam9 GetInvokerparam9(string method)
+        {
+            invokerparam9 inv = null;
+            if (!invoker.invokerparam9_dict.TryGetValue(method, out inv))
+            {
+                inv = new invokerparam9(method);
+                invoker.invokerparam9_dict[method] = inv;
+            }
+            return inv;
+        }
 
-		public virtual string[] IMethods()
-		{
-			return null;
-		}
-	}
+        public object getResultFromTask(Task t)
+        {
+            if (t.GetType().GetGenericArguments().Length == 0)
+            {
+                return null;
+            }
+            return this.GetInvokerparam0P("Result").invoke(t);
+        }
+
+        public object invokeMethod(object o, string method, object[] arguments)
+        {
+            if (arguments.Length == 0)
+            {
+                return this.GetInvokerparam0(method).invoke(o);
+            }
+            if ((int)arguments.Length == 1)
+            {
+                return this.GetInvokerparam1(method).invoke(o, arguments[0]);
+            }
+            if ((int)arguments.Length == 2)
+            {
+                return this.GetInvokerparam2(method).invoke(o, arguments[0], arguments[1]);
+            }
+            if ((int)arguments.Length == 3)
+            {
+                return this.GetInvokerparam3(method).invoke(o, arguments[0], arguments[1], arguments[2]);
+            }
+            if ((int)arguments.Length == 4)
+            {
+                return this.GetInvokerparam4(method).invoke(o, arguments[0], arguments[1], arguments[2], arguments[3]);
+            }
+            if ((int)arguments.Length == 5)
+            {
+                return this.GetInvokerparam5(method).invoke(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+            }
+            if ((int)arguments.Length == 6)
+            {
+                return this.GetInvokerparam6(method).invoke(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+            }
+            if ((int)arguments.Length == 7)
+            {
+                return this.GetInvokerparam7(method).invoke(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
+            }
+            if ((int)arguments.Length == 8)
+            {
+                return this.GetInvokerparam8(method).invoke(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7]);
+            }
+            if ((int)arguments.Length != 9)
+            {
+                return null;
+            }
+            return this.GetInvokerparam9(method).invoke(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8]);
+        }
+
+        public object invokeMethodVoid(object o, string method, object[] arguments)
+        {
+            if (arguments.Length == 0)
+            {
+                this.GetInvokerparam0(method).invokeasVoid(o);
+            }
+            else if ((int)arguments.Length == 1)
+            {
+                this.GetInvokerparam1(method).invokeasVoid(o, arguments[0]);
+            }
+            else if ((int)arguments.Length == 2)
+            {
+                this.GetInvokerparam2(method).invokeasVoid(o, arguments[0], arguments[1]);
+            }
+            else if ((int)arguments.Length == 3)
+            {
+                this.GetInvokerparam3(method).invokeasVoid(o, arguments[0], arguments[1], arguments[2]);
+            }
+            else if ((int)arguments.Length == 4)
+            {
+                this.GetInvokerparam4(method).invokeasVoid(o, arguments[0], arguments[1], arguments[2], arguments[3]);
+            }
+            else if ((int)arguments.Length == 5)
+            {
+                this.GetInvokerparam5(method).invokeasVoid(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+            }
+            else if ((int)arguments.Length == 6)
+            {
+                this.GetInvokerparam6(method).invokeasVoid(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+            }
+            else if ((int)arguments.Length == 7)
+            {
+                this.GetInvokerparam7(method).invokeasVoid(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
+            }
+            else if ((int)arguments.Length == 8)
+            {
+                this.GetInvokerparam8(method).invokeasVoid(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7]);
+            }
+            else if ((int)arguments.Length == 9)
+            {
+                this.GetInvokerparam9(method).invokeasVoid(o, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8]);
+            }
+            return null;
+        }
+
+        public object invokeProperty(object o, string method, object[] arguments)
+        {
+            if (arguments.Length == 0)
+            {
+                return this.GetInvokerparam0P(method).invoke(o);
+            }
+            if ((int)arguments.Length == 1)
+            {
+                return this.GetInvokerparam1P(method).invoke(o, arguments[0]);
+            }
+            if ((int)arguments.Length != 2)
+            {
+                return null;
+            }
+            return this.GetInvokerparam2P(method).invoke(o, arguments[0], arguments[1]);
+        }
+
+        public object invokePropertySet(object o, string method, object value, object[] arguments)
+        {
+            if (arguments.Length == 0)
+            {
+                return this.GetInvokerparam0P(method).setProperty(o, value);
+            }
+            if ((int)arguments.Length == 1)
+            {
+                return this.GetInvokerparam1P(method).setProperty(o, arguments[0], value);
+            }
+            if ((int)arguments.Length != 2)
+            {
+                return null;
+            }
+            return this.GetInvokerparam2P(method).setProperty(o, arguments[0], arguments[1], value);
+        }
+    }
 }

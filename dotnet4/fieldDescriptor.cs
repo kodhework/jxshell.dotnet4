@@ -17,12 +17,20 @@ namespace jxshell.dotnet4
 		{
 		}
 
-		public object getValue(object o = null)
-		{
-			return wrapper.getFromObject(this.fieldInfo.GetValue(o));
-		}
+        public object getValue(object o = null)
+        {
+            return wrapper.getFromObject(this.fieldInfo.GetValue(o));
+        }
 
-		public void setValue(object value, object o = null)
+        public object getMetavalue(object o=null)
+        {
+            return metaObject.getFromObject(this.fieldInfo.GetValue(o));
+        }
+
+
+        
+
+        public void setValue(object value, object o = null)
 		{
 			if (value is wrapper)
 			{

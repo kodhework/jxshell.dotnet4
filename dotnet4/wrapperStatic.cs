@@ -48,12 +48,27 @@ namespace jxshell.dotnet4
 			return new wrapper(o, this.typeD);
 		}
 
+        public static metaObject loadMetavalueFromType(Type t)
+        {
+            var m = new metaObject();
+            string name = jxshell.dotnet4.typeDescriptor.getNameForType(t);
+            m.value = t;
+            m.isstatic = true; 
+            m.typeDescriptor= jxshell.dotnet4.typeDescriptor.loadFromType(t, name, false);
+            m.name = name;
+            return m; 
+        }
+
+
 		public static wrapperStatic loadFromType(Type t)
 		{
 			wrapperStatic value;
 			if (!wrapperStatic.wrappersStatic.TryGetValue(t, out value))
 			{
-				value = jxshell.dotnet4.typeDescriptor.loadFromType(t).compile();
+                var typed = jxshell.dotnet4.typeDescriptor.loadFromType(t);
+                
+                value = typed.compile();
+                
 				wrapperStatic.wrappersStatic[t] = value;
 			}
 			return value;

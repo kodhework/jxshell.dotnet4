@@ -7,7 +7,15 @@ using System.Text;
 
 namespace jxshell.dotnet4
 {
-	[ComVisible(true)]
+    [ComVisible(true)]
+    public class Ast
+    {
+        public string code;
+        public string staticName;
+        public string instanceName;
+    }
+
+    [ComVisible(true)]
 	public class typeDescriptor
 	{
 		public Dictionary<string, methodDescriptor> instanceMethods = new Dictionary<string, methodDescriptor>();
@@ -317,6 +325,11 @@ namespace jxshell.dotnet4
 			o = propertyForParameters.GetValue(ox, args);
 		}
 
+        public static bool isSpecialMethod(MethodBase method)
+        {
+            return method.Name.StartsWith("add_") || method.IsSpecialName;
+        }
+
 		public PropertyInfo getPropertyForParameters(string property, ref object[] parameters)
 		{
 			return this.instanceProperties[property].getPropertyForParameters(ref parameters);
@@ -397,6 +410,31 @@ namespace jxshell.dotnet4
 			return new typeDescriptor(t, typeName, compile);
 		}
 
+
+        public object fieldGetValue(int index, object o)
+        {
+            return fields[index].getMetavalue(o);
+        }
+        public void fieldSetValue(int index, object o, object value)
+        {
+            fields[index].setValue(value, o);
+        }
+
+        public Ast compileForVfp()
+        {
+            return null; 
+        }
+
+        public object getMetavalueFromObject(object o)
+        {
+            var m = new metaObject();
+            m.value = o;
+            m.isstatic = false;
+            m.name = this.typeString;
+            return m;
+        }
+
+
 		public void precompile(StringBuilder sb, ref string staticClass, ref string instanceClass)
 		{
 			sb.AppendLine("namespace jxshell.dotnet4{");
@@ -420,8 +458,9 @@ namespace jxshell.dotnet4
 				sb.Append("__initEnum();");
 			}
 			sb.Append("}");
-			sb.AppendLine();
-			sb.Append("public override ").Append("wrapper").Append(" getWrapper(object o){return new ").Append(text).Append("(o,typeD);}");
+            sb.AppendLine();
+            sb.AppendLine("static invoker __invoker= new invoker();");
+            sb.Append("public override ").Append("wrapper").Append(" getWrapper(object o){return new ").Append(text).Append("(o,typeD);}");
 			sb.AppendLine();
 			if (!this.type.IsEnum)
 			{
@@ -495,8 +534,22 @@ namespace jxshell.dotnet4
 				}
 				sb.AppendLine();
 				sb.AppendLine("try{");
-				sb.Append("return __process(method.Invoke(null,args));");
-				sb.AppendLine("}catch(Exception e){if(e.InnerException!=null){throw e.InnerException;}throw e;}");
+
+                sb.AppendLine("if(typeDescriptor.isSpecialMethod(method)){");
+                sb.AppendLine("return __process(method.Invoke(null,args));");
+                sb.AppendLine("}else{");
+                sb.AppendLine("object ret= null;");
+                sb.AppendLine("System.Reflection.MethodInfo mi= (System.Reflection.MethodInfo) method;");
+                sb.AppendLine("if(mi.ReturnType == typeof(void))");
+                sb.AppendLine("__invoker.invokeMethodVoid(null,mi.Name,args);");
+                sb.AppendLine("else");
+                sb.AppendLine("ret= __invoker.invokeMethod(null,mi.Name,args);");
+                sb.AppendLine("return __process(ret);");
+                sb.AppendLine("}");
+
+                //sb.Append("return __process(method.Invoke(null,args));");
+
+                sb.AppendLine("}catch(Exception e){if(e.InnerException!=null){throw e.InnerException;}throw e;}");
 				sb.AppendLine();
 				sb.AppendLine("}");
 			}
@@ -646,8 +699,9 @@ namespace jxshell.dotnet4
 			sb.Append("public ").Append(text).Append("():base(){}");
 			sb.AppendLine();
 			typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType);
-			sb.AppendLine();
-			sb.AppendLine("/* FIELDS */");
+            sb.AppendLine("static jxshell.dotnet4.invoker __invoker= new invoker()" +
+                ";");
+            sb.AppendLine("/* FIELDS */");
 			foreach (KeyValuePair<string, fieldDescriptor> instanceField in this.instanceFields)
 			{
 				sb.Append("public object ").Append(instanceField.Value.name).Append("{");
@@ -711,8 +765,21 @@ namespace jxshell.dotnet4
 					sb.AppendLine("try{");
 					sb.Append("var method = m.getMethodForParameters(ref args);");
 					sb.AppendLine();
-					sb.Append("return __process(method.Invoke(wrappedObject,args));");
-					sb.AppendLine("}catch(Exception e){if(e.InnerException!=null){throw e.InnerException;}throw e;}");
+                    
+                    sb.AppendLine("if(typeDescriptor.isSpecialMethod(method)){");
+                    sb.AppendLine("return __process(method.Invoke(wrappedObject,args));");
+                    sb.AppendLine("}else{");
+                    sb.AppendLine("object ret= null;");
+                    sb.AppendLine("System.Reflection.MethodInfo mi= (System.Reflection.MethodInfo) method;");
+                    sb.AppendLine("if(mi.ReturnType == typeof(void))");
+                    sb.AppendLine("__invoker.invokeMethodVoid(wrappedObject,mi.Name,args);");
+                    sb.AppendLine("else");
+                    sb.AppendLine("ret= __invoker.invokeMethod(wrappedObject,mi.Name,args);");
+                    sb.AppendLine("return __process(ret); }");
+
+
+                    //sb.Append("return __process(method.Invoke(wrappedObject,args));");
+                    sb.AppendLine("}catch(Exception e){if(e.InnerException!=null){throw e.InnerException;}throw e;}");
 					sb.AppendLine();
 					sb.AppendLine("}");
 				}

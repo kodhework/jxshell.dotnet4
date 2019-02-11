@@ -69,7 +69,53 @@ namespace jxshell.dotnet4
 			return this.getMethodForParameters(ref parameters, arguments);
 		}
 
-		public MethodBase getMethodForParameters(ref object[] parameters, Type[] arguments = null)
+        public object invokeMetavalueForParameters(object[] args , object target)
+        {
+            object m0 = getMethodForParameters(ref args, null);
+            if (m0 is MethodInfo)
+            {
+                var m1 = (MethodInfo)m0;
+                var name = m1.Name;
+                var invoker1 = new invoker();
+                if (m1.ReturnType == typeof(void))
+                {
+                    invoker1.invokeMethodVoid(target, name, args);
+                    return null;
+                }
+                var value = invoker1.invokeMethod(target, name, args);
+                if (null == value)
+                    return null;
+                return metaObject.getFromObject(value, target);
+            }
+            else
+            {
+                var c1 = (ConstructorInfo)m0;
+                var value= c1.Invoke(args);
+                if (null == value)
+                    return null;
+                return metaObject.getFromObject(value, target);
+            }
+        }
+
+        public object invokeMetavalueGenericForParameters(Type[] gargs, object[] args, object target)
+        {
+            var m1 = (MethodInfo)getMethodForParameters(ref args, gargs);
+            var name = m1.Name;
+            var invoker1 = new invoker();
+            if (m1.ReturnType == typeof(void))
+            {
+                invoker1.invokeMethodVoid(target, name, args);
+                return null;
+            }
+            var value = invoker1.invokeMethod(target, name, args);
+            if (null == value)
+                return null;
+            return metaObject.getFromObject(value, target);
+        }
+
+
+
+        public MethodBase getMethodForParameters(ref object[] parameters, Type[] arguments = null)
 		{
 			memberDescriptor.convertParameters(ref parameters);
 			List<MethodBase> list = new List<MethodBase>(0);

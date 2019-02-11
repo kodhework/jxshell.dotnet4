@@ -12,16 +12,34 @@ namespace jxshell.dotnet4
 		public List<PropertyInfo> properties = new List<PropertyInfo>();
 
 		public string name;
-
 		public int maxParameterCount;
-
 		public int propertyOrder;
-
 		public propertyDescriptor()
 		{
 		}
 
-		public PropertyInfo getPropertyForParameters(ref object[] parameters)
+        public object getPropertyMetavalueForParameters(object[] args, object target)
+        {
+            var p = getPropertyForParameters(ref args);
+            var name = p.Name;
+            var invoker1 = new invoker();
+            var value = invoker1.invokeProperty(target, name, args);
+            return metaObject.getFromObject(value, target);
+
+        }
+
+        public object setPropertyMetavalueForParameters(object[] args, object target, object value)
+        {
+            var p = getPropertyForParameters(ref args);
+            var name = p.Name;
+            var invoker1 = new invoker();
+            invoker1.invokePropertySet(target, name, value, args);
+            return null;
+
+        }
+
+
+        public PropertyInfo getPropertyForParameters(ref object[] parameters)
 		{
 			memberDescriptor.convertParameters(ref parameters);
 			List<PropertyInfo> list = new List<PropertyInfo>(0);

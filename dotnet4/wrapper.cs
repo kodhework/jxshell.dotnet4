@@ -21,6 +21,13 @@ namespace jxshell.dotnet4
 			this.typeD = typeDescriptor.loadFromType(o.GetType());
 		}
 
+        public virtual void dispose()
+        {
+            wrappedObject = null;
+            wrappedType = null;
+            typeD = null;
+        }
+
 		public wrapper(object o, typeDescriptor td)
 		{
 			this.wrappedObject = o;
@@ -80,15 +87,16 @@ namespace jxshell.dotnet4
 
 		public static object getFromObject(object o)
 		{
-			if (o is wrapper)
-			{
-				return o;
-			}
+			
 			if (o == null || o is DBNull)
 			{
 				return null;
 			}
-			if (o is long)
+            if (o is wrapper)
+            {
+                return o;
+            }
+            if (o is long)
 			{
 				return (double)((long)o);
 			}

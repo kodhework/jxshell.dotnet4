@@ -222,8 +222,10 @@ namespace jxshell.dotnet4
 			}
 			this.loadAssembly(typeof(Console).Assembly);
 			this.loadAssembly(typeof(WebClient).Assembly);
-			this.loadAssembly(typeof(typeDescriptor).Assembly);
-		}
+            this.loadAssembly(typeof(typeDescriptor).Assembly);
+            this.loadAssembly(typeof(jxshell.csharplanguage).Assembly);
+            
+        }
 
 		public void loadAssembly(string name)
 		{

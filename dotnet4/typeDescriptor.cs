@@ -535,17 +535,18 @@ namespace jxshell.dotnet4
 				sb.AppendLine();
 				sb.AppendLine("try{");
 
-                sb.AppendLine("if(typeDescriptor.isSpecialMethod(method)){");
+                //sb.AppendLine("if(typeDescriptor.isSpecialMethod(method)){");
                 sb.AppendLine("return __process(method.Invoke(null,args));");
-                sb.AppendLine("}else{");
+                /*sb.AppendLine("}else{");
                 sb.AppendLine("object ret= null;");
                 sb.AppendLine("System.Reflection.MethodInfo mi= (System.Reflection.MethodInfo) method;");
                 sb.AppendLine("if(mi.ReturnType == typeof(void))");
-                sb.AppendLine("__invoker.invokeMethodVoid(null,mi.Name,args);");
+                sb.AppendLine("__invoker.invokeMethodVoid(wrappedType,mi.Name,args);");
                 sb.AppendLine("else");
-                sb.AppendLine("ret= __invoker.invokeMethod(null,mi.Name,args);");
+                sb.AppendLine("ret= __invoker.invokeMethod(wrappedType,mi.Name,args);");
                 sb.AppendLine("return __process(ret);");
                 sb.AppendLine("}");
+                */
 
                 //sb.Append("return __process(method.Invoke(null,args));");
 
@@ -804,9 +805,14 @@ namespace jxshell.dotnet4
 					sb.Append("){");
 					sb.AppendLine();
 					int maxParameterCount = instanceMethod.Value.maxParameterCount;
+
+                    //System.Func<int, string> f = new Func<int, string>();
+
+
+                    sb.AppendLine("if(disposed) return null;");
 					sb.Append("invokerparam").Append(maxParameterCount).Append(" invoker = new invokerparam").Append(maxParameterCount).Append("(__internalMethod);");
-					sb.Append("object o =null;");
-					MethodInfo methodInfo = (MethodInfo)instanceMethod.Value.baseMethods[0];
+                    sb.Append("object o =null;");
+                    MethodInfo methodInfo = (MethodInfo)instanceMethod.Value.baseMethods[0];
 					if (methodInfo.ReturnType != typeof(void))
 					{
 						sb.Append("o=invoker.invoke");

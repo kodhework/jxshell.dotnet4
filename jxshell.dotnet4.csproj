@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="dotnet4\metaObject.cs" />
     <Compile Include="dotnet4\invoker.cs" />
+    <Compile Include="dotnet4\SelfRegister.cs" />
     <Compile Include="dotnet4\VFPHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <AutoGen>false</AutoGen>

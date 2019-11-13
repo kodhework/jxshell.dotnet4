@@ -35,6 +35,11 @@ namespace jxshell.dotnet4
 		{
 		}
 
+        public string version()
+        {
+            return Environment.Version.ToString();
+        }
+
 		public void @add(Assembly a)
 		{
 			if (this.assemblies.IndexOf(a) < 0)

@@ -1,10 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26020.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29324.140
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jxshell.dotnet4", "jxshell.dotnet4.csproj", "{FB083784-41EF-4DD6-A223-8F0B82E467CE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jxshellbase", "jxsheelbase\jxshellbase.csproj", "{A1E48F72-4B7B-461A-B22D-52D21C522ECF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jxshell.register", "jxshell.register\jxshell.register.csproj", "{CFFE9E17-80BD-45AB-B82C-44E53DB9434A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +22,10 @@ Global
 		{A1E48F72-4B7B-461A-B22D-52D21C522ECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1E48F72-4B7B-461A-B22D-52D21C522ECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1E48F72-4B7B-461A-B22D-52D21C522ECF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFFE9E17-80BD-45AB-B82C-44E53DB9434A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFFE9E17-80BD-45AB-B82C-44E53DB9434A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFFE9E17-80BD-45AB-B82C-44E53DB9434A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFFE9E17-80BD-45AB-B82C-44E53DB9434A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

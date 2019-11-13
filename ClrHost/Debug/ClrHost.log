@@ -1,2 +1,0 @@
-﻿  ClrHost.cpp
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.23.28105\atlmfc\include\atldef.h(69,10): fatal error C1083: No se puede abrir el archivo incluir: 'errno.h': No such file or directory

@@ -47,7 +47,11 @@ namespace jxshell.dotnet4
                 //[HKEY_CURRENT_USER\Software\Classes\CLSID\{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}]
                 //@="Namespace.Class
                 //
-                RegistryKey keyCLSID = RootKey.OpenSubKey(@"CLSID", RegistryKeyPermissionCheck.ReadWriteSubTree, System.Security.AccessControl.RegistryRights.FullControl).CreateSubKey(GUIDstr);
+                RegistryKey keyCLSID = RootKey.OpenSubKey(@"CLSID",true);
+                if(keyCLSID == null){
+                	keyCLSID = RootKey.CreateSubKey("CLSID",true);
+                }
+                keyCLSID = keyCLSID.CreateSubKey(GUIDstr);
                 keyCLSID.SetValue(null, type.FullName);
 
 

@@ -46,5 +46,9 @@ namespace jxshell
 		public virtual void runScript(string script)
 		{
 		}
+		
+		public virtual void runScriptWithId(string script, string id)
+		{
+		}
 	}
 }

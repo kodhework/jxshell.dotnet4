@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.CSharp;
 using System;
 using System.CodeDom.Compiler;
@@ -124,8 +125,12 @@ namespace jxshell
 			if (item == 0)
 			{
 				DateTime now = DateTime.Now;
-				while ((DateTime.Now - now).TotalMilliseconds < 4000 && item == 0)
+				while (true)
 				{
+					if (((DateTime.Now - now).TotalMilliseconds >= 4000 ? true : item != 0))
+					{
+						break;
+					}
 					item = csharplanguage.compilations[file];
 				}
 				if (item == 0)
@@ -133,7 +138,11 @@ namespace jxshell
 					throw new TimeoutException(string.Concat("No se pudo compilar correctamente el archivo ", file, ". Se agoto el tiempo de espera para la sincronizacion de compilacion entre diferentes hilos."));
 				}
 			}
-			if (item != 1)
+			if (item == 1)
+			{
+				this.compiled = csharplanguage.compileds[file];
+			}
+			else
 			{
 				csharplanguage.compilations[file] = 0;
 				bool flag = true;
@@ -215,10 +224,6 @@ namespace jxshell
 				{
 				}
 			}
-			else
-			{
-				this.compiled = csharplanguage.compileds[file];
-			}
 		}
 
 		public override void runFile(string file)
@@ -228,23 +233,66 @@ namespace jxshell
 			MethodInfo method = type.GetMethod("main", new Type[0]);
 			method.Invoke(null, new object[0]);
 		}
-
+	
+		
+		public static string GetSHA1(String texto)
+		{
+			SHA1 sha1 = SHA1CryptoServiceProvider.Create();
+			Byte[] textOriginal = Encoding.UTF8.GetBytes(texto);
+			Byte[] hash = sha1.ComputeHash(textOriginal);
+			StringBuilder cadena = new StringBuilder();
+			foreach (byte i in hash)
+			{
+			  cadena.AppendFormat("{0:x2}", i);
+			}
+			return cadena.ToString();
+		}
+		
+		
 		public override void runScript(string script)
 		{
-			this.p.GenerateInMemory = false;
-			this.compileString(script, environment.getCompilationFile());
-			Type type = this.compiled.GetType("program");
-			MethodInfo method = type.GetMethod("main", new Type[0]);
-			method.Invoke(null, new object[0]);
+			
+			//string file = environment.getCompilationFile(GetSHA1(script));
+			runScriptWithId(script, "JIT-" + GetSHA1(script));
+		}
+		
+		public override void runScriptWithId(string script, string id)
+		{
+			Type type = null;
+			string file  = environment.getCompilationFile(id);
+			var f = new FileInfo(file);
+			bool compile= true;
+			if(f.Exists){
+				
+				try{
+					this.compiled = Assembly.LoadFile(file);
+					type = this.compiled.GetType("program");	
+					compile = false;
+				}
+				catch(Exception){}
+				
+			}
+			if(compile){
+				this.p.GenerateInMemory = false;
+				this.compileString(script, file);
+				type = this.compiled.GetType("program");
+			}
+			if(type != null){
+				MethodInfo method = type.GetMethod("main", new Type[0]);
+				method.Invoke(null, new object[0]);	
+			}
 		}
 
 		public void runScript(string script, bool inMemory)
 		{
+			
 			this.p.GenerateInMemory = inMemory;
 			this.compileString(script, (inMemory ? "" : environment.getCompilationFile()));
 			Type type = this.compiled.GetType("program");
-			MethodInfo method = type.GetMethod("main", new Type[0]);
-			method.Invoke(null, new object[0]);
+			if(type != null){
+				MethodInfo method = type.GetMethod("main", new Type[0]);
+				method.Invoke(null, new object[0]);	
+			}
 		}
 	}
 }

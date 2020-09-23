@@ -1,3 +1,5 @@
+using System.IO;
+using System.Security.Cryptography;
 using jxshell;
 using System;
 using System.Collections.Generic;
@@ -7,15 +9,7 @@ using System.Text;
 
 namespace jxshell.dotnet4
 {
-    [ComVisible(true)]
-    public class Ast
-    {
-        public string code;
-        public string staticName;
-        public string instanceName;
-    }
-
-    [ComVisible(true)]
+	[ComVisible(true)]
 	public class typeDescriptor
 	{
 		public Dictionary<string, methodDescriptor> instanceMethods = new Dictionary<string, methodDescriptor>();
@@ -68,7 +62,7 @@ namespace jxshell.dotnet4
 
 		public typeDescriptor(Type t, string typeName, bool compile = true)
 		{
-			jxshell.dotnet4.methodDescriptor methodDescriptor;
+			methodDescriptor count;
 			typeDescriptor.loadEvaluator();
 			if (typeDescriptor.language == null)
 			{
@@ -79,37 +73,37 @@ namespace jxshell.dotnet4
 			for (int i = 0; i < (int)methods.Length; i++)
 			{
 				MethodInfo methodInfo = methods[i];
-				if (!methodInfo.Name.StartsWith("get_") && !methodInfo.Name.StartsWith("set_"))
+				if ((methodInfo.Name.StartsWith("get_") ? false : !methodInfo.Name.StartsWith("set_")))
 				{
-					jxshell.dotnet4.methodDescriptor value = null;
+					methodDescriptor _methodDescriptor = null;
 					if (methodInfo.IsGenericMethod)
 					{
-						string text = string.Concat("generic_", methodInfo.Name);
-						if (!this.instanceMethods.TryGetValue(text, out value))
+						string str = string.Concat("generic_", methodInfo.Name);
+						if (!this.instanceMethods.TryGetValue(str, out _methodDescriptor))
 						{
-							value = new jxshell.dotnet4.methodDescriptor()
+							_methodDescriptor = new methodDescriptor()
 							{
 								isGenericMethod = true
 							};
-							this.instanceMethods[text] = value;
-							this.methods.Add(value);
-							value.methodOrder = this.methods.Count - 1;
-							value.name = text;
+							this.instanceMethods[str] = _methodDescriptor;
+							this.methods.Add(_methodDescriptor);
+							_methodDescriptor.methodOrder = this.methods.Count - 1;
+							_methodDescriptor.name = str;
 						}
 					}
-					else if (!this.instanceMethods.TryGetValue(methodInfo.Name, out value))
+					else if (!this.instanceMethods.TryGetValue(methodInfo.Name, out _methodDescriptor))
 					{
-						value = new jxshell.dotnet4.methodDescriptor();
-						this.instanceMethods[methodInfo.Name] = value;
-						this.methods.Add(value);
-						value.methodOrder = this.methods.Count - 1;
-						value.name = methodInfo.Name;
+						_methodDescriptor = new methodDescriptor();
+						this.instanceMethods[methodInfo.Name] = _methodDescriptor;
+						this.methods.Add(_methodDescriptor);
+						_methodDescriptor.methodOrder = this.methods.Count - 1;
+						_methodDescriptor.name = methodInfo.Name;
 					}
-					value.baseMethods.Add(methodInfo);
-					value.maxParameterCount = Math.Max(value.maxParameterCount, (int)methodInfo.GetParameters().Length);
+					_methodDescriptor.baseMethods.Add(methodInfo);
+					_methodDescriptor.maxParameterCount = Math.Max(_methodDescriptor.maxParameterCount, (int)methodInfo.GetParameters().Length);
 					if (methodInfo.IsGenericMethod)
 					{
-						value.genericParameterCount = Math.Max(value.genericParameterCount, (int)methodInfo.GetGenericArguments().Length);
+						_methodDescriptor.genericParameterCount = Math.Max(_methodDescriptor.genericParameterCount, (int)methodInfo.GetGenericArguments().Length);
 					}
 				}
 			}
@@ -117,124 +111,124 @@ namespace jxshell.dotnet4
 			for (int j = 0; j < (int)properties.Length; j++)
 			{
 				PropertyInfo propertyInfo = properties[j];
-				propertyDescriptor value2 = null;
-				if (!this.instanceProperties.TryGetValue(propertyInfo.Name, out value2))
+				propertyDescriptor _propertyDescriptor = null;
+				if (!this.instanceProperties.TryGetValue(propertyInfo.Name, out _propertyDescriptor))
 				{
-					value2 = new propertyDescriptor();
-					this.instanceProperties[propertyInfo.Name] = value2;
-					this.properties.Add(value2);
-					value2.propertyOrder = this.properties.Count - 1;
-					value2.name = propertyInfo.Name;
+					_propertyDescriptor = new propertyDescriptor();
+					this.instanceProperties[propertyInfo.Name] = _propertyDescriptor;
+					this.properties.Add(_propertyDescriptor);
+					_propertyDescriptor.propertyOrder = this.properties.Count - 1;
+					_propertyDescriptor.name = propertyInfo.Name;
 				}
-				value2.properties.Add(propertyInfo);
-				value2.maxParameterCount = Math.Max(value2.maxParameterCount, (int)propertyInfo.GetIndexParameters().Length);
+				_propertyDescriptor.properties.Add(propertyInfo);
+				_propertyDescriptor.maxParameterCount = Math.Max(_propertyDescriptor.maxParameterCount, (int)propertyInfo.GetIndexParameters().Length);
 			}
 			FieldInfo[] fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.GetField | BindingFlags.SetField);
 			for (int k = 0; k < (int)fields.Length; k++)
 			{
 				FieldInfo fieldInfo = fields[k];
-				fieldDescriptor value3 = null;
-				if (!this.instanceFields.TryGetValue(fieldInfo.Name, out value3))
+				fieldDescriptor _fieldDescriptor = null;
+				if (!this.instanceFields.TryGetValue(fieldInfo.Name, out _fieldDescriptor))
 				{
-					value3 = new fieldDescriptor();
-					this.instanceFields[fieldInfo.Name] = value3;
-					this.fields.Add(value3);
-					value3.fieldOrder = this.fields.Count - 1;
-					value3.name = fieldInfo.Name;
+					_fieldDescriptor = new fieldDescriptor();
+					this.instanceFields[fieldInfo.Name] = _fieldDescriptor;
+					this.fields.Add(_fieldDescriptor);
+					_fieldDescriptor.fieldOrder = this.fields.Count - 1;
+					_fieldDescriptor.name = fieldInfo.Name;
 				}
-				value3.fieldInfo = fieldInfo;
+				_fieldDescriptor.fieldInfo = fieldInfo;
 			}
 			ConstructorInfo[] constructors = t.GetConstructors();
 			for (int l = 0; l < (int)constructors.Length; l++)
 			{
 				ConstructorInfo constructorInfo = constructors[l];
-				if (this.constructor != null)
+				if (this.constructor == null)
 				{
-					methodDescriptor = this.constructor;
+					methodDescriptor _methodDescriptor1 = new methodDescriptor();
+					methodDescriptor _methodDescriptor2 = _methodDescriptor1;
+					this.constructor = _methodDescriptor1;
+					count = _methodDescriptor2;
+					this.methods.Add(count);
+					count.name = "construct";
+					count.methodOrder = this.methods.Count - 1;
 				}
 				else
 				{
-					jxshell.dotnet4.methodDescriptor _methodDescriptor = new jxshell.dotnet4.methodDescriptor();
-					jxshell.dotnet4.methodDescriptor _methodDescriptor1 = _methodDescriptor;
-					this.constructor = _methodDescriptor;
-					methodDescriptor = _methodDescriptor1;
-					this.methods.Add(methodDescriptor);
-					methodDescriptor.name = "construct";
-					methodDescriptor.methodOrder = this.methods.Count - 1;
+					count = this.constructor;
 				}
-				methodDescriptor.baseMethods.Add(constructorInfo);
-				methodDescriptor.maxParameterCount = Math.Max(methodDescriptor.maxParameterCount, (int)constructorInfo.GetParameters().Length);
+				count.baseMethods.Add(constructorInfo);
+				count.maxParameterCount = Math.Max(count.maxParameterCount, (int)constructorInfo.GetParameters().Length);
 			}
 			MethodInfo[] methodInfoArray = t.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.InvokeMethod);
 			for (int m = 0; m < (int)methodInfoArray.Length; m++)
 			{
-				MethodInfo methodInfo2 = methodInfoArray[m];
-				if (!methodInfo2.Name.StartsWith("get_") && !methodInfo2.Name.StartsWith("set_"))
+				MethodInfo methodInfo1 = methodInfoArray[m];
+				if ((methodInfo1.Name.StartsWith("get_") ? false : !methodInfo1.Name.StartsWith("set_")))
 				{
-					jxshell.dotnet4.methodDescriptor value4 = null;
-					if (methodInfo2.IsGenericMethod)
+					methodDescriptor name = null;
+					if (methodInfo1.IsGenericMethod)
 					{
-						string text2 = string.Concat("generic_", methodInfo2.Name);
-						if (!this.instanceMethods.TryGetValue(text2, out value4))
+						string str1 = string.Concat("generic_", methodInfo1.Name);
+						if (!this.instanceMethods.TryGetValue(str1, out name))
 						{
-							value4 = new jxshell.dotnet4.methodDescriptor();
-							this.staticMethods[text2] = value4;
-							value4.isGenericMethod = true;
-							this.methods.Add(value4);
-							value4.methodOrder = this.methods.Count - 1;
-							value4.name = text2;
+							name = new methodDescriptor();
+							this.staticMethods[str1] = name;
+							name.isGenericMethod = true;
+							this.methods.Add(name);
+							name.methodOrder = this.methods.Count - 1;
+							name.name = str1;
 						}
 					}
-					else if (!this.staticMethods.TryGetValue(methodInfo2.Name, out value4))
+					else if (!this.staticMethods.TryGetValue(methodInfo1.Name, out name))
 					{
-						value4 = new jxshell.dotnet4.methodDescriptor();
-						this.staticMethods[methodInfo2.Name] = value4;
-						this.methods.Add(value4);
-						value4.name = methodInfo2.Name;
-						value4.methodOrder = this.methods.Count - 1;
+						name = new methodDescriptor();
+						this.staticMethods[methodInfo1.Name] = name;
+						this.methods.Add(name);
+						name.name = methodInfo1.Name;
+						name.methodOrder = this.methods.Count - 1;
 					}
-					value4.baseMethods.Add(methodInfo2);
-					value4.maxParameterCount = Math.Max(value4.maxParameterCount, (int)methodInfo2.GetParameters().Length);
-					if (methodInfo2.IsGenericMethod)
+					name.baseMethods.Add(methodInfo1);
+					name.maxParameterCount = Math.Max(name.maxParameterCount, (int)methodInfo1.GetParameters().Length);
+					if (methodInfo1.IsGenericMethod)
 					{
-						value4.genericParameterCount = Math.Max(value4.genericParameterCount, (int)methodInfo2.GetGenericArguments().Length);
+						name.genericParameterCount = Math.Max(name.genericParameterCount, (int)methodInfo1.GetGenericArguments().Length);
 					}
 				}
 			}
 			PropertyInfo[] propertyInfoArray = t.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 			for (int n = 0; n < (int)propertyInfoArray.Length; n++)
 			{
-				PropertyInfo propertyInfo2 = propertyInfoArray[n];
-				propertyDescriptor value5 = null;
-				if (!this.staticProperties.TryGetValue(propertyInfo2.Name, out value5))
+				PropertyInfo propertyInfo1 = propertyInfoArray[n];
+				propertyDescriptor _propertyDescriptor1 = null;
+				if (!this.staticProperties.TryGetValue(propertyInfo1.Name, out _propertyDescriptor1))
 				{
-					value5 = new propertyDescriptor();
-					this.staticProperties[propertyInfo2.Name] = value5;
-					this.properties.Add(value5);
-					value5.propertyOrder = this.properties.Count - 1;
-					value5.name = propertyInfo2.Name;
+					_propertyDescriptor1 = new propertyDescriptor();
+					this.staticProperties[propertyInfo1.Name] = _propertyDescriptor1;
+					this.properties.Add(_propertyDescriptor1);
+					_propertyDescriptor1.propertyOrder = this.properties.Count - 1;
+					_propertyDescriptor1.name = propertyInfo1.Name;
 				}
-				value5.properties.Add(propertyInfo2);
-				value5.maxParameterCount = Math.Max(value5.maxParameterCount, (int)propertyInfo2.GetIndexParameters().Length);
+				_propertyDescriptor1.properties.Add(propertyInfo1);
+				_propertyDescriptor1.maxParameterCount = Math.Max(_propertyDescriptor1.maxParameterCount, (int)propertyInfo1.GetIndexParameters().Length);
 			}
 			FieldInfo[] fieldInfoArray = t.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.GetField | BindingFlags.SetField);
 			for (int o = 0; o < (int)fieldInfoArray.Length; o++)
 			{
-				FieldInfo fieldInfo2 = fieldInfoArray[o];
-				fieldDescriptor value6 = null;
-				if (!this.instanceFields.TryGetValue(fieldInfo2.Name, out value6))
+				FieldInfo fieldInfo1 = fieldInfoArray[o];
+				fieldDescriptor _fieldDescriptor1 = null;
+				if (!this.instanceFields.TryGetValue(fieldInfo1.Name, out _fieldDescriptor1))
 				{
-					value6 = new fieldDescriptor();
-					this.staticFields[fieldInfo2.Name] = value6;
-					this.fields.Add(value6);
-					value6.fieldOrder = this.fields.Count - 1;
-					value6.name = fieldInfo2.Name;
+					_fieldDescriptor1 = new fieldDescriptor();
+					this.staticFields[fieldInfo1.Name] = _fieldDescriptor1;
+					this.fields.Add(_fieldDescriptor1);
+					_fieldDescriptor1.fieldOrder = this.fields.Count - 1;
+					_fieldDescriptor1.name = fieldInfo1.Name;
 				}
-				value6.fieldInfo = fieldInfo2;
+				_fieldDescriptor1.fieldInfo = fieldInfo1;
 			}
 			this.type = t;
 			typeDescriptor.loadedTypes[t] = this;
-			if (compile && typeDescriptor.gencompile)
+			if ((!compile ? false : typeDescriptor.gencompile))
 			{
 				this.compile();
 			}
@@ -247,34 +241,104 @@ namespace jxshell.dotnet4
 			sb.AppendLine("using System.Reflection;");
 			sb.AppendLine("using jxshell.dotnet4;");
 		}
-
+		
+		public static string GetSHA1(String texto)
+		{
+			SHA1 sha1 = SHA1CryptoServiceProvider.Create();
+			Byte[] textOriginal = Encoding.UTF8.GetBytes(texto);
+			Byte[] hash = sha1.ComputeHash(textOriginal);
+			StringBuilder cadena = new StringBuilder();
+			foreach (byte i in hash)
+			{
+			  cadena.AppendFormat("{0:x2}", i);
+			}
+			return cadena.ToString();
+		}
+			
 		public wrapperStatic compile()
 		{
-			if (this.compiled)
+			wrapperStatic _wrapperStatic;
+			if (!this.compiled)
 			{
-				return this.compiledWrapper;
+				
+				// generar un archivo  por cada tipo 
+				string name = GetSHA1(this.type.AssemblyQualifiedName).ToUpper();
+				string file = environment.getCompilationFile(name);
+				FileInfo f = new FileInfo(file);
+				
+				try
+				{
+					
+					if(f.Exists){
+						
+						string str = "C" + GetSHA1(type.AssemblyQualifiedName);
+						string str1 = "C" + GetSHA1(type.AssemblyQualifiedName) + "_static";
+			
+						Type _type = Assembly.LoadFile(file).GetType(string.Concat("jxshell.dotnet4.", str1));
+						ConstructorInfo _constructor = _type.GetConstructor(new Type[] { typeof(Type), typeof(typeDescriptor) });
+						
+						this.compiledWrapper = (wrapperStatic)_constructor.Invoke(new object[] { this.type, this });
+						this.compiled = true;
+					}
+					else{
+						StringBuilder stringBuilder = new StringBuilder();
+						string str = "";
+						string str1 = "";
+						typeDescriptor.addUsingsStatements(stringBuilder);
+						this.precompile(stringBuilder, ref str, ref str1);
+						stringBuilder.AppendLine("class program{public static void main(){}}");
+					
+						csharplanguage _csharplanguage = typeDescriptor.language;
+						_csharplanguage.runScriptWithId(stringBuilder.ToString(), name);
+						
+						Type _type = _csharplanguage.getCompiledAssembly().GetType(string.Concat("jxshell.dotnet4.", str));
+						ConstructorInfo _constructor = _type.GetConstructor(new Type[] { typeof(Type), typeof(typeDescriptor) });
+						
+						this.compiledWrapper = (wrapperStatic)_constructor.Invoke(new object[] { this.type, this });
+						this.compiled = true;
+						
+					}
+				}
+				catch (Exception exception1)
+				{
+					Exception exception = exception1;
+					throw new Exception(string.Concat("No se puede obtener un wrapper para el tipo ", this.type.ToString(), ". ", exception.Message), exception);
+				}
+				_wrapperStatic = this.compiledWrapper;
+				
+				
 			}
-			StringBuilder stringBuilder = new StringBuilder();
-			string staticClass = "";
-			string instanceClass = "";
-			typeDescriptor.addUsingsStatements(stringBuilder);
-			this.precompile(stringBuilder, ref staticClass, ref instanceClass);
-			stringBuilder.AppendLine("class program{public static void main(){}}");
-			try
+			else
 			{
-				jxshell.csharplanguage csharplanguage = typeDescriptor.language;
-				csharplanguage.runScript(stringBuilder.ToString(), typeDescriptor.generateInMemory);
-				Type type = csharplanguage.getCompiledAssembly().GetType(string.Concat("jxshell.dotnet4.", staticClass));
-				ConstructorInfo constructorInfo = type.GetConstructor(new Type[] { typeof(Type), typeof(typeDescriptor) });
-				this.compiledWrapper = (wrapperStatic)constructorInfo.Invoke(new object[] { this.type, this });
-				this.compiled = true;
+				_wrapperStatic = this.compiledWrapper;
 			}
-			catch (Exception exception)
+			return _wrapperStatic;
+		}
+
+		public Ast compileForVfp()
+		{
+			return null;
+		}
+
+		public object fieldGetValue(int index, object o)
+		{
+			return this.fields[index].getMetavalue(o);
+		}
+
+		public void fieldSetValue(int index, object o, object value)
+		{
+			this.fields[index].setValue(value, o);
+		}
+
+		public object getMetavalueFromObject(object o)
+		{
+			metaObject _metaObject = new metaObject()
 			{
-				Exception ex = exception;
-				throw new Exception(string.Concat("No se puede obtener un wrapper para el tipo ", this.type.ToString(), ". ", ex.Message), ex);
-			}
-			return this.compiledWrapper;
+				@value = o,
+				isstatic = false,
+				name = this.typeString
+			};
+			return _metaObject;
 		}
 
 		public MethodBase getMethodForParameters(string method, ref object[] parameters)
@@ -284,33 +348,38 @@ namespace jxshell.dotnet4
 
 		public static string getNameForType(Type t)
 		{
+			string str;
 			StringBuilder stringBuilder = new StringBuilder();
-			if (!t.IsGenericType)
+			if (t.IsGenericType)
 			{
-				return t.ToString().Replace("+", ".").Replace("&", "");
+				string str1 = t.ToString();
+				str1 = str1.Substring(0, str1.IndexOf("`"));
+				stringBuilder.Append(str1);
+				stringBuilder.Append("<");
+				Type[] genericArguments = t.GetGenericArguments();
+				bool flag = false;
+				Type[] typeArray = genericArguments;
+				for (int i = 0; i < (int)typeArray.Length; i++)
+				{
+					Type type = typeArray[i];
+					if (!flag)
+					{
+						flag = true;
+					}
+					else
+					{
+						stringBuilder.Append(",");
+					}
+					stringBuilder.Append(typeDescriptor.getNameForType(type));
+				}
+				stringBuilder.Append(">");
+				str = stringBuilder.ToString();
 			}
-			string text = t.ToString();
-			text = text.Substring(0, text.IndexOf("`"));
-			stringBuilder.Append(text);
-			stringBuilder.Append("<");
-			Type[] genericArguments = t.GetGenericArguments();
-			bool flag = false;
-			Type[] typeArray = genericArguments;
-			for (int i = 0; i < (int)typeArray.Length; i++)
+			else
 			{
-				Type t2 = typeArray[i];
-				if (flag)
-				{
-					stringBuilder.Append(",");
-				}
-				else
-				{
-					flag = true;
-				}
-				stringBuilder.Append(typeDescriptor.getNameForType(t2));
+				str = t.ToString().Replace("+", ".").Replace("&", "");
 			}
-			stringBuilder.Append(">");
-			return stringBuilder.ToString();
+			return str;
 		}
 
 		public object getProperty(object o, string property, params object[] args)
@@ -324,11 +393,6 @@ namespace jxshell.dotnet4
 			PropertyInfo propertyForParameters = this.getPropertyForParameters(property, ref args);
 			o = propertyForParameters.GetValue(ox, args);
 		}
-
-        public static bool isSpecialMethod(MethodBase method)
-        {
-            return method.Name.StartsWith("add_") || method.IsSpecialName;
-        }
 
 		public PropertyInfo getPropertyForParameters(string property, ref object[] parameters)
 		{
@@ -386,81 +450,62 @@ namespace jxshell.dotnet4
 			return this.compiled;
 		}
 
+		public static bool isSpecialMethod(MethodBase method)
+		{
+			return (method.Name.StartsWith("add_") ? true : method.IsSpecialName);
+		}
+
 		internal static void loadEvaluator()
 		{
 		}
 
 		public static typeDescriptor loadFromType(Type t)
 		{
-			typeDescriptor value;
-			if (typeDescriptor.loadedTypes.TryGetValue(t, out value))
-			{
-				return value;
-			}
-			return new typeDescriptor(t);
+			typeDescriptor _typeDescriptor;
+			typeDescriptor _typeDescriptor1;
+			_typeDescriptor1 = (!typeDescriptor.loadedTypes.TryGetValue(t, out _typeDescriptor) ? new typeDescriptor(t) : _typeDescriptor);
+			return _typeDescriptor1;
 		}
 
 		public static typeDescriptor loadFromType(Type t, string typeName, bool compile = true)
 		{
-			typeDescriptor value;
-			if (typeDescriptor.loadedTypes.TryGetValue(t, out value))
-			{
-				return value;
-			}
-			return new typeDescriptor(t, typeName, compile);
+			typeDescriptor _typeDescriptor;
+			typeDescriptor _typeDescriptor1;
+			_typeDescriptor1 = (!typeDescriptor.loadedTypes.TryGetValue(t, out _typeDescriptor) ? new typeDescriptor(t, typeName, compile) : _typeDescriptor);
+			return _typeDescriptor1;
 		}
-
-
-        public object fieldGetValue(int index, object o)
-        {
-            return fields[index].getMetavalue(o);
-        }
-        public void fieldSetValue(int index, object o, object value)
-        {
-            fields[index].setValue(value, o);
-        }
-
-        public Ast compileForVfp()
-        {
-            return null; 
-        }
-
-        public object getMetavalueFromObject(object o)
-        {
-            var m = new metaObject();
-            m.value = o;
-            m.isstatic = false;
-            m.name = this.typeString;
-            return m;
-        }
-
 
 		public void precompile(StringBuilder sb, ref string staticClass, ref string instanceClass)
 		{
 			sb.AppendLine("namespace jxshell.dotnet4{");
-			string text = string.Concat("_", environment.uniqueId());
-			string text2 = string.Concat("_", environment.uniqueId());
+			
+			
+			//string str = string.Concat("_", environment.uniqueId());
+			//string str1 = string.Concat("_", environment.uniqueId());
+			string str = "C" + GetSHA1(type.AssemblyQualifiedName);
+			string str1 = "C" + GetSHA1(type.AssemblyQualifiedName) + "_static";
+			
 			sb.AppendLine();
 			sb.AppendLine("[ComVisible(true)]");
-			sb.Append("public class ").Append(text2).Append(" : ");
-			if (!typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType))
-			{
-				sb.Append("wrapperStatic{");
-			}
-			else
+			sb.Append("public class ").Append(str1).Append(" : ");
+			if (typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType))
 			{
 				sb.Append("delegateWrapperStatic{");
 			}
+			else
+			{
+				sb.Append("wrapperStatic{");
+			}
 			sb.AppendLine();
-			sb.Append("public ").Append(text2).Append("(Type t, typeDescriptor td):base(t,td){");
+			sb.Append("public ").Append(str1).Append("(Type t, typeDescriptor td):base(t,td){");
 			if (this.type.IsEnum)
 			{
 				sb.Append("__initEnum();");
 			}
 			sb.Append("}");
-            sb.AppendLine();
-            sb.AppendLine("static invoker __invoker= new invoker();");
-            sb.Append("public override ").Append("wrapper").Append(" getWrapper(object o){return new ").Append(text).Append("(o,typeD);}");
+			sb.AppendLine();
+			sb.AppendLine("static invoker __invoker= new invoker();");
+			sb.Append("public override ").Append("wrapper").Append(" getWrapper(object o){return new ").Append(str).Append("(o,typeD);}");
 			sb.AppendLine();
 			if (!this.type.IsEnum)
 			{
@@ -482,12 +527,12 @@ namespace jxshell.dotnet4
 				}
 			}
 			sb.AppendLine("/* MÉTODOS */");
-			foreach (KeyValuePair<string, jxshell.dotnet4.methodDescriptor> staticMethod in this.staticMethods)
+			foreach (KeyValuePair<string, methodDescriptor> staticMethod in this.staticMethods)
 			{
 				sb.Append("public object ").Append(staticMethod.Value.name).Append("(");
 				StringBuilder stringBuilder = new StringBuilder();
-				bool isGenericMethod = staticMethod.Value.isGenericMethod;
-				if (isGenericMethod)
+				bool value = staticMethod.Value.isGenericMethod;
+				if (value)
 				{
 					stringBuilder.Append("System.Collections.Generic.List<System.Type> genericArguments=new System.Collections.Generic.List<System.Type>(1);");
 					for (int i = 0; i < staticMethod.Value.genericParameterCount; i++)
@@ -510,7 +555,7 @@ namespace jxshell.dotnet4
 					{
 						stringBuilder.Append(",");
 					}
-					if (j > 0 | isGenericMethod)
+					if (j > 0 | value)
 					{
 						sb.Append(",");
 					}
@@ -524,33 +569,18 @@ namespace jxshell.dotnet4
 				sb.AppendLine();
 				sb.Append("var m = typeD.methods[").Append(staticMethod.Value.methodOrder).Append("];");
 				sb.AppendLine();
-				if (!isGenericMethod)
-				{
-					sb.Append("var method = m.getMethodForParameters(ref args);");
-				}
-				else
+				if (value)
 				{
 					sb.Append("var method = m.getGenericMethodForParameters(genericArguments.ToArray(), ref args);");
 				}
+				else
+				{
+					sb.Append("var method = m.getMethodForParameters(ref args);");
+				}
 				sb.AppendLine();
 				sb.AppendLine("try{");
-
-                //sb.AppendLine("if(typeDescriptor.isSpecialMethod(method)){");
-                sb.AppendLine("return __process(method.Invoke(null,args));");
-                /*sb.AppendLine("}else{");
-                sb.AppendLine("object ret= null;");
-                sb.AppendLine("System.Reflection.MethodInfo mi= (System.Reflection.MethodInfo) method;");
-                sb.AppendLine("if(mi.ReturnType == typeof(void))");
-                sb.AppendLine("__invoker.invokeMethodVoid(wrappedType,mi.Name,args);");
-                sb.AppendLine("else");
-                sb.AppendLine("ret= __invoker.invokeMethod(wrappedType,mi.Name,args);");
-                sb.AppendLine("return __process(ret);");
-                sb.AppendLine("}");
-                */
-
-                //sb.Append("return __process(method.Invoke(null,args));");
-
-                sb.AppendLine("}catch(Exception e){if(e.InnerException!=null){throw e.InnerException;}throw e;}");
+				sb.AppendLine("return __process(method.Invoke(null,args));");
+				sb.AppendLine("}catch(Exception e){if(e.InnerException!=null){throw e.InnerException;}throw e;}");
 				sb.AppendLine();
 				sb.AppendLine("}");
 			}
@@ -558,39 +588,39 @@ namespace jxshell.dotnet4
 			foreach (KeyValuePair<string, propertyDescriptor> staticProperty in this.staticProperties)
 			{
 				sb.Append("public object ");
-				if (staticProperty.Value.maxParameterCount <= 0)
-				{
-					sb.Append(staticProperty.Value.name);
-				}
-				else
+				if (staticProperty.Value.maxParameterCount > 0)
 				{
 					sb.Append("this[");
 				}
-				StringBuilder stringBuilder2 = new StringBuilder();
-				if (staticProperty.Value.maxParameterCount <= 0)
-				{
-					stringBuilder2.Append("object[] args = {};");
-				}
 				else
 				{
-					stringBuilder2.Append("object[] args = {");
+					sb.Append(staticProperty.Value.name);
+				}
+				StringBuilder stringBuilder1 = new StringBuilder();
+				if (staticProperty.Value.maxParameterCount > 0)
+				{
+					stringBuilder1.Append("object[] args = {");
 					for (int k = 0; k < staticProperty.Value.maxParameterCount; k++)
 					{
 						if (k > 0)
 						{
-							stringBuilder2.Append(",");
+							stringBuilder1.Append(",");
 							sb.Append(",");
 						}
-						stringBuilder2.Append("a").Append(k);
+						stringBuilder1.Append("a").Append(k);
 						sb.Append("[Optional] object ").Append("a").Append(k);
 					}
 					sb.Append("]");
-					stringBuilder2.Append("};");
+					stringBuilder1.Append("};");
+				}
+				else
+				{
+					stringBuilder1.Append("object[] args = {};");
 				}
 				sb.Append("{");
 				sb.AppendLine();
 				sb.AppendLine("get{");
-				sb.Append(stringBuilder2);
+				sb.Append(stringBuilder1);
 				sb.AppendLine();
 				sb.Append("var m = typeD.properties[").Append(staticProperty.Value.propertyOrder).Append("];");
 				sb.AppendLine();
@@ -602,7 +632,7 @@ namespace jxshell.dotnet4
 				sb.AppendLine();
 				sb.AppendLine("}");
 				sb.AppendLine("set{");
-				sb.Append(stringBuilder2);
+				sb.Append(stringBuilder1);
 				sb.AppendLine();
 				sb.Append("var m = typeD.properties[").Append(staticProperty.Value.propertyOrder).Append("];");
 				sb.AppendLine();
@@ -619,50 +649,56 @@ namespace jxshell.dotnet4
 			if (this.type.IsEnum)
 			{
 				string[] names = Enum.GetNames(this.type);
-				StringBuilder stringBuilder3 = new StringBuilder();
-				stringBuilder3.Append("Type ty = typeof(").Append(typeDescriptor.getNameForType(this.type)).Append(");");
-				stringBuilder3.Append("Array values = global::System.Enum.GetValues(ty);");
-				stringBuilder3.AppendLine();
+				StringBuilder stringBuilder2 = new StringBuilder();
+				stringBuilder2.Append("Type ty = typeof(").Append(typeDescriptor.getNameForType(this.type)).Append(");");
+				stringBuilder2.Append("Array values = global::System.Enum.GetValues(ty);");
+				stringBuilder2.AppendLine();
 				int num = 0;
 				string[] strArrays = names;
 				for (int l = 0; l < (int)strArrays.Length; l++)
 				{
-					string value = strArrays[l];
-					sb.Append("public ").Append(text).Append(" ").Append(value).Append("= new ").Append(text).Append("();").AppendLine();
-					stringBuilder3.Append(value).Append(".wrappedObject = values.GetValue(").Append(num).Append(");");
-					stringBuilder3.AppendLine();
-					stringBuilder3.Append(value).Append(".wrappedType = ty;");
-					stringBuilder3.AppendLine();
-					stringBuilder3.Append(value).Append(".typeD = typeD;");
-					stringBuilder3.AppendLine();
+					string str2 = strArrays[l];
+					sb.Append("public ").Append(str).Append(" ").Append(str2).Append("= new ").Append(str).Append("();").AppendLine();
+					stringBuilder2.Append(str2).Append(".wrappedObject = values.GetValue(").Append(num).Append(");");
+					stringBuilder2.AppendLine();
+					stringBuilder2.Append(str2).Append(".wrappedType = ty;");
+					stringBuilder2.AppendLine();
+					stringBuilder2.Append(str2).Append(".typeD = typeD;");
+					stringBuilder2.AppendLine();
 					num++;
 				}
-				sb.Append("public void __initEnum(){").AppendLine().Append(stringBuilder3.ToString()).AppendLine().Append("}");
+				sb.Append("public void __initEnum(){").AppendLine().Append(stringBuilder2.ToString()).AppendLine().Append("}");
 			}
-			jxshell.dotnet4.methodDescriptor methodDescriptor = this.constructor;
-			if (methodDescriptor != null)
+			methodDescriptor _methodDescriptor = this.constructor;
+			if (_methodDescriptor != null)
 			{
-				if (!typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType))
+				if (typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType))
 				{
-					sb.Append("public object ").Append(methodDescriptor.name).Append("(");
-					StringBuilder stringBuilder4 = new StringBuilder();
-					stringBuilder4.Append("object[] args = {");
-					for (int m = 0; m < methodDescriptor.maxParameterCount; m++)
+					sb.Append("public override delegateWrapper getThisWrapper(){");
+					sb.Append("var o = new ").Append(str).Append("();return o;");
+					sb.Append("}");
+				}
+				else
+				{
+					sb.Append("public object ").Append(_methodDescriptor.name).Append("(");
+					StringBuilder stringBuilder3 = new StringBuilder();
+					stringBuilder3.Append("object[] args = {");
+					for (int m = 0; m < _methodDescriptor.maxParameterCount; m++)
 					{
 						if (m > 0)
 						{
-							stringBuilder4.Append(",");
+							stringBuilder3.Append(",");
 							sb.Append(",");
 						}
-						stringBuilder4.Append("a").Append(m);
+						stringBuilder3.Append("a").Append(m);
 						sb.Append("[Optional] object ").Append("a").Append(m);
 					}
 					sb.Append("){");
-					stringBuilder4.Append("}");
+					stringBuilder3.Append("}");
 					sb.AppendLine();
-					sb.Append(stringBuilder4).Append(";");
+					sb.Append(stringBuilder3).Append(";");
 					sb.AppendLine();
-					sb.Append("var m = typeD.methods[").Append(methodDescriptor.methodOrder).Append("];");
+					sb.Append("var m = typeD.methods[").Append(_methodDescriptor.methodOrder).Append("];");
 					sb.AppendLine();
 					sb.Append("var method = m.getConstructorForParameters(ref args);");
 					sb.AppendLine();
@@ -672,37 +708,30 @@ namespace jxshell.dotnet4
 					sb.AppendLine();
 					sb.AppendLine("}");
 				}
-				else
-				{
-					sb.Append("public override delegateWrapper getThisWrapper(){");
-					sb.Append("var o = new ").Append(text).Append("();return o;");
-					sb.Append("}");
-				}
 			}
 			sb.AppendLine("}");
 			sb.AppendLine();
 			sb.AppendLine("[ComVisible(true)]");
-			sb.Append("public class ").Append(text).Append(" : ");
+			sb.Append("public class ").Append(str).Append(" : ");
 			if (this.type.IsEnum)
 			{
 				sb.Append("enumW");
 			}
-			else if (!typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType))
-			{
-				sb.Append("w");
-			}
-			else
+			else if (typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType))
 			{
 				sb.Append("delegateW");
 			}
+			else
+			{
+				sb.Append("w");
+			}
 			sb.Append("rapper{").AppendLine();
-			sb.Append("public ").Append(text).Append("(object o, typeDescriptor td):base(o,td){}");
-			sb.Append("public ").Append(text).Append("():base(){}");
+			sb.Append("public ").Append(str).Append("(object o, typeDescriptor td):base(o,td){}");
+			sb.Append("public ").Append(str).Append("():base(){}");
 			sb.AppendLine();
 			typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType);
-            sb.AppendLine("static jxshell.dotnet4.invoker __invoker= new invoker()" +
-                ";");
-            sb.AppendLine("/* FIELDS */");
+			sb.AppendLine("static jxshell.dotnet4.invoker __invoker= new invoker();");
+			sb.AppendLine("/* FIELDS */");
 			foreach (KeyValuePair<string, fieldDescriptor> instanceField in this.instanceFields)
 			{
 				sb.Append("public object ").Append(instanceField.Value.name).Append("{");
@@ -719,193 +748,185 @@ namespace jxshell.dotnet4
 				sb.AppendLine("}");
 			}
 			sb.AppendLine("/* MÉTODOS */");
-			foreach (KeyValuePair<string, jxshell.dotnet4.methodDescriptor> instanceMethod in this.instanceMethods)
+			foreach (KeyValuePair<string, methodDescriptor> instanceMethod in this.instanceMethods)
 			{
-				if (!typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType) || !(instanceMethod.Value.name == "Invoke"))
-				{
-					sb.Append("public object ").Append(instanceMethod.Value.name).Append("(");
-					StringBuilder stringBuilder7 = new StringBuilder();
-					bool isGenericMethod2 = instanceMethod.Value.isGenericMethod;
-					if (isGenericMethod2)
-					{
-						stringBuilder7.Append("System.Collections.Generic.List<System.Type> genericArguments=new System.Collections.Generic.List<System.Type>(1);");
-						for (int num3 = 0; num3 < instanceMethod.Value.genericParameterCount; num3++)
-						{
-							if (num3 > 0)
-							{
-								sb.Append(",");
-							}
-							stringBuilder7.Append("if(type").Append(num3).Append("!=null){if(type").Append(num3);
-							stringBuilder7.Append(" is wrapper){genericArguments.Add((System.Type)(((wrapper)type").Append(num3).Append(").wrappedObject));}else{");
-							stringBuilder7.Append("genericArguments.Add(Manager.lastManager.getTypeOrGenericType(type").Append(num3).Append(".ToString()));}").Append("}");
-							sb.Append("[Optional] object ").Append("type").Append(num3);
-							stringBuilder7.AppendLine();
-						}
-					}
-					stringBuilder7.Append("object[] args = {");
-					for (int num4 = 0; num4 < instanceMethod.Value.maxParameterCount; num4++)
-					{
-						if (num4 > 0)
-						{
-							stringBuilder7.Append(",");
-						}
-						if (num4 > 0 | isGenericMethod2)
-						{
-							sb.Append(",");
-						}
-						stringBuilder7.Append("a").Append(num4);
-						sb.Append("[Optional] object ").Append("a").Append(num4);
-					}
-					sb.Append("){");
-					stringBuilder7.Append("}");
-					sb.AppendLine();
-					sb.Append(stringBuilder7).Append(";");
-					sb.AppendLine();
-					sb.Append("var m = typeD.methods[").Append(instanceMethod.Value.methodOrder).Append("];");
-					sb.AppendLine();
-					sb.AppendLine("try{");
-					sb.Append("var method = m.getMethodForParameters(ref args);");
-					sb.AppendLine();
-                    
-                    sb.AppendLine("if(typeDescriptor.isSpecialMethod(method)){");
-                    sb.AppendLine("return __process(method.Invoke(wrappedObject,args));");
-                    sb.AppendLine("}else{");
-                    sb.AppendLine("object ret= null;");
-                    sb.AppendLine("System.Reflection.MethodInfo mi= (System.Reflection.MethodInfo) method;");
-                    sb.AppendLine("if(mi.ReturnType == typeof(void))");
-                    sb.AppendLine("__invoker.invokeMethodVoid(wrappedObject,mi.Name,args);");
-                    sb.AppendLine("else");
-                    sb.AppendLine("ret= __invoker.invokeMethod(wrappedObject,mi.Name,args);");
-                    sb.AppendLine("return __process(ret); }");
-
-
-                    //sb.Append("return __process(method.Invoke(wrappedObject,args));");
-                    sb.AppendLine("}catch(Exception e){if(e.InnerException!=null){throw e.InnerException;}throw e;}");
-					sb.AppendLine();
-					sb.AppendLine("}");
-				}
-				else
+				if ((!typeof(MulticastDelegate).IsAssignableFrom(this.type.BaseType) ? false : instanceMethod.Value.name == "Invoke"))
 				{
 					sb.Append("public object call(");
+					StringBuilder stringBuilder4 = new StringBuilder();
 					StringBuilder stringBuilder5 = new StringBuilder();
-					StringBuilder stringBuilder6 = new StringBuilder();
-					stringBuilder5.Append("");
+					stringBuilder4.Append("");
 					for (int n = 0; n < instanceMethod.Value.maxParameterCount; n++)
 					{
 						if (n > 0)
 						{
+							stringBuilder4.Append(",");
 							stringBuilder5.Append(",");
-							stringBuilder6.Append(",");
 							sb.Append(",");
 						}
-						stringBuilder6.Append("wrapper.getFromObject(a").Append(n).Append(")");
-						stringBuilder5.Append("a").Append(n);
+						stringBuilder5.Append("wrapper.getFromObject(a").Append(n).Append(")");
+						stringBuilder4.Append("a").Append(n);
 						sb.Append("[Optional] object ").Append("a").Append(n);
 					}
 					sb.Append("){");
 					sb.AppendLine();
-					int maxParameterCount = instanceMethod.Value.maxParameterCount;
-
-                    //System.Func<int, string> f = new Func<int, string>();
-
-
-                    sb.AppendLine("if(disposed) return null;");
-					sb.Append("invokerparam").Append(maxParameterCount).Append(" invoker = new invokerparam").Append(maxParameterCount).Append("(__internalMethod);");
-                    sb.Append("object o =null;");
-                    MethodInfo methodInfo = (MethodInfo)instanceMethod.Value.baseMethods[0];
-					if (methodInfo.ReturnType != typeof(void))
+					int value1 = instanceMethod.Value.maxParameterCount;
+					sb.AppendLine("if(disposed) return null;");
+					sb.Append("invokerparam").Append(value1).Append(" invoker = new invokerparam").Append(value1).Append("(__internalMethod);");
+					sb.Append("object o =null;");
+					MethodInfo item = (MethodInfo)instanceMethod.Value.baseMethods[0];
+					if (item.ReturnType == typeof(void))
 					{
-						sb.Append("o=invoker.invoke");
+						sb.Append("invoker.invokeasVoid");
 					}
 					else
 					{
-						sb.Append("invoker.invokeasVoid");
+						sb.Append("o=invoker.invoke");
 					}
 					sb.Append("(__internalTarget");
 					if (instanceMethod.Value.maxParameterCount > 0)
 					{
 						sb.Append(",");
 					}
-					sb.Append(stringBuilder5.ToString()).Append(");");
+					sb.Append(stringBuilder4.ToString()).Append(");");
 					sb.AppendLine();
 					sb.AppendLine("return o;}");
 					sb.Append("public ");
-					if (methodInfo.ReturnType != typeof(void))
-					{
-						sb.Append(typeDescriptor.getNameForType(methodInfo.ReturnType));
-					}
-					else
+					if (item.ReturnType == typeof(void))
 					{
 						sb.Append("void ");
 					}
-					sb.Append(" __internalInvoke(");
-					ParameterInfo[] parameters = methodInfo.GetParameters();
-					for (int num2 = 0; num2 < (int)parameters.Length; num2++)
+					else
 					{
-						ParameterInfo parameterInfo = parameters[num2];
-						if (num2 > 0)
+						sb.Append(typeDescriptor.getNameForType(item.ReturnType));
+					}
+					sb.Append(" __internalInvoke(");
+					ParameterInfo[] parameters = item.GetParameters();
+					for (int o = 0; o < (int)parameters.Length; o++)
+					{
+						ParameterInfo parameterInfo = parameters[o];
+						if (o > 0)
 						{
 							sb.Append(",");
 						}
-						string value2 = (!parameterInfo.ParameterType.IsPointer ? typeDescriptor.getNameForType(parameterInfo.ParameterType) : "object");
-						sb.Append(value2).Append(" a").Append(num2);
+						string str3 = (!parameterInfo.ParameterType.IsPointer ? typeDescriptor.getNameForType(parameterInfo.ParameterType) : "object");
+						sb.Append(str3).Append(" a").Append(o);
 					}
 					sb.Append("){");
 					sb.AppendLine();
-					if (methodInfo.ReturnType != typeof(void))
+					if (item.ReturnType == typeof(void))
 					{
-						sb.Append("object o= ");
-						sb.Append("call(").Append(stringBuilder6.ToString()).Append(");");
-						sb.AppendLine();
-						sb.Append("if(o is wrapper){o = ((wrapper)o).wrappedObject;}");
-						sb.AppendLine();
-						sb.Append("return (").Append(typeDescriptor.getNameForType(methodInfo.ReturnType)).Append(")o;");
-						sb.AppendLine();
+						sb.Append("call(").Append(stringBuilder5.ToString()).Append(");");
 					}
 					else
 					{
-						sb.Append("call(").Append(stringBuilder6.ToString()).Append(");");
+						sb.Append("object o= ");
+						sb.Append("call(").Append(stringBuilder5.ToString()).Append(");");
+						sb.AppendLine();
+						sb.Append("if(o is wrapper){o = ((wrapper)o).wrappedObject;}");
+						sb.AppendLine();
+						sb.Append("return (").Append(typeDescriptor.getNameForType(item.ReturnType)).Append(")o;");
+						sb.AppendLine();
 					}
 					sb.Append("}\n");
+				}
+				else
+				{
+					sb.Append("public object ").Append(instanceMethod.Value.name).Append("(");
+					StringBuilder stringBuilder6 = new StringBuilder();
+					bool flag = instanceMethod.Value.isGenericMethod;
+					if (flag)
+					{
+						stringBuilder6.Append("System.Collections.Generic.List<System.Type> genericArguments=new System.Collections.Generic.List<System.Type>(1);");
+						for (int p = 0; p < instanceMethod.Value.genericParameterCount; p++)
+						{
+							if (p > 0)
+							{
+								sb.Append(",");
+							}
+							stringBuilder6.Append("if(type").Append(p).Append("!=null){if(type").Append(p);
+							stringBuilder6.Append(" is wrapper){genericArguments.Add((System.Type)(((wrapper)type").Append(p).Append(").wrappedObject));}else{");
+							stringBuilder6.Append("genericArguments.Add(Manager.lastManager.getTypeOrGenericType(type").Append(p).Append(".ToString()));}").Append("}");
+							sb.Append("[Optional] object ").Append("type").Append(p);
+							stringBuilder6.AppendLine();
+						}
+					}
+					stringBuilder6.Append("object[] args = {");
+					for (int q = 0; q < instanceMethod.Value.maxParameterCount; q++)
+					{
+						if (q > 0)
+						{
+							stringBuilder6.Append(",");
+						}
+						if (q > 0 | flag)
+						{
+							sb.Append(",");
+						}
+						stringBuilder6.Append("a").Append(q);
+						sb.Append("[Optional] object ").Append("a").Append(q);
+					}
+					sb.Append("){");
+					stringBuilder6.Append("}");
+					sb.AppendLine();
+					sb.Append(stringBuilder6).Append(";");
+					sb.AppendLine();
+					sb.Append("var m = typeD.methods[").Append(instanceMethod.Value.methodOrder).Append("];");
+					sb.AppendLine();
+					sb.AppendLine("try{");
+					sb.Append("var method = m.getMethodForParameters(ref args);");
+					sb.AppendLine();
+					sb.AppendLine("if(typeDescriptor.isSpecialMethod(method)){");
+					sb.AppendLine("return __process(method.Invoke(wrappedObject,args));");
+					sb.AppendLine("}else{");
+					sb.AppendLine("object ret= null;");
+					sb.AppendLine("System.Reflection.MethodInfo mi= (System.Reflection.MethodInfo) method;");
+					sb.AppendLine("if(mi.ReturnType == typeof(void))");
+					sb.AppendLine("__invoker.invokeMethodVoid(wrappedObject,mi.Name,args);");
+					sb.AppendLine("else");
+					sb.AppendLine("ret= __invoker.invokeMethod(wrappedObject,mi.Name,args);");
+					sb.AppendLine("return __process(ret); }");
+					sb.AppendLine("}catch(Exception e){if(e.InnerException!=null){throw e.InnerException;}throw e;}");
+					sb.AppendLine();
+					sb.AppendLine("}");
 				}
 			}
 			sb.AppendLine("/* PROPIEDADES  */");
 			foreach (KeyValuePair<string, propertyDescriptor> instanceProperty in this.instanceProperties)
 			{
 				sb.Append("public object ");
-				if (instanceProperty.Value.maxParameterCount <= 0)
-				{
-					sb.Append(instanceProperty.Value.name);
-				}
-				else
+				if (instanceProperty.Value.maxParameterCount > 0)
 				{
 					sb.Append("this[");
 				}
-				StringBuilder stringBuilder8 = new StringBuilder();
-				if (instanceProperty.Value.maxParameterCount <= 0)
+				else
 				{
-					stringBuilder8.Append("object[] args = {};");
+					sb.Append(instanceProperty.Value.name);
+				}
+				StringBuilder stringBuilder7 = new StringBuilder();
+				if (instanceProperty.Value.maxParameterCount > 0)
+				{
+					stringBuilder7.Append("object[] args = {");
+					for (int r = 0; r < instanceProperty.Value.maxParameterCount; r++)
+					{
+						if (r > 0)
+						{
+							stringBuilder7.Append(",");
+							sb.Append(",");
+						}
+						stringBuilder7.Append("a").Append(r);
+						sb.Append("[Optional] object ").Append("a").Append(r);
+					}
+					sb.Append("]");
+					stringBuilder7.Append("};");
 				}
 				else
 				{
-					stringBuilder8.Append("object[] args = {");
-					for (int num5 = 0; num5 < instanceProperty.Value.maxParameterCount; num5++)
-					{
-						if (num5 > 0)
-						{
-							stringBuilder8.Append(",");
-							sb.Append(",");
-						}
-						stringBuilder8.Append("a").Append(num5);
-						sb.Append("[Optional] object ").Append("a").Append(num5);
-					}
-					sb.Append("]");
-					stringBuilder8.Append("};");
+					stringBuilder7.Append("object[] args = {};");
 				}
 				sb.Append("{");
 				sb.AppendLine();
 				sb.AppendLine("get{");
-				sb.Append(stringBuilder8);
+				sb.Append(stringBuilder7);
 				sb.AppendLine();
 				sb.Append("var m = typeD.properties[").Append(instanceProperty.Value.propertyOrder).Append("];");
 				sb.AppendLine();
@@ -918,7 +939,7 @@ namespace jxshell.dotnet4
 				sb.AppendLine();
 				sb.AppendLine("}");
 				sb.AppendLine("set{");
-				sb.Append(stringBuilder8);
+				sb.Append(stringBuilder7);
 				sb.AppendLine();
 				sb.Append("var m = typeD.properties[").Append(instanceProperty.Value.propertyOrder).Append("];");
 				sb.AppendLine();
@@ -933,8 +954,8 @@ namespace jxshell.dotnet4
 				sb.AppendLine("}");
 			}
 			sb.AppendLine("}}");
-			staticClass = text2;
-			instanceClass = text;
+			staticClass = str1;
+			instanceClass = str;
 		}
 
 		public void setCompiledWrapper(wrapperStatic ww)

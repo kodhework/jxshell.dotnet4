@@ -126,14 +126,14 @@ namespace jxshell
 		public static string addBs(string path)
 		{
 			string str;
-			if (path.EndsWith("/") || path.EndsWith("\\"))
-			{
-				str = path;
-			}
-			else
+			if ((path.EndsWith("/") ? false : !path.EndsWith("\\")))
 			{
 				char altDirectorySeparatorChar = Path.AltDirectorySeparatorChar;
 				str = string.Concat(path, altDirectorySeparatorChar.ToString());
+			}
+			else
+			{
+				str = path;
 			}
 			path = str;
 			return path;
@@ -147,31 +147,31 @@ namespace jxshell
 
 		public static string getCompilationFile(string id)
 		{
-			return string.Concat(environment.compilationPath, id, ".$$.dll");
+			return string.Concat(environment.compilationPath, id, ".DLL");
 		}
 
 		public static string getDirectoryPathForUri(Uri u)
 		{
 			string str;
-			if (!u.IsFile)
+			if (u.IsFile)
+			{
+				str = environment.addBs(Path.GetDirectoryName(u.LocalPath));
+			}
+			else
 			{
 				StringBuilder stringBuilder = new StringBuilder();
-				if (u.Scheme == "file")
+				if (u.Scheme != "file")
 				{
-					stringBuilder.Append(u.Scheme).Append("://");
+					stringBuilder.Append(u.Scheme).Append(":/");
 				}
 				else
 				{
-					stringBuilder.Append(u.Scheme).Append(":/");
+					stringBuilder.Append(u.Scheme).Append("://");
 				}
 				stringBuilder.Append(u.Authority);
 				string str1 = string.Join("", u.Segments, 0, (int)u.Segments.Length - 1);
 				stringBuilder.Append(str1);
 				str = environment.addBs(stringBuilder.ToString());
-			}
-			else
-			{
-				str = environment.addBs(Path.GetDirectoryName(u.LocalPath));
 			}
 			return str;
 		}
@@ -195,23 +195,29 @@ namespace jxshell
 				string str2 = Path.Combine(environment.exPath, "zoneinfo");
 				property.SetValue(null, str2, new object[0]);
 			}
-			if (!environment.windows)
+			if (environment.windows)
 			{
-				environment.environmentPath = string.Concat(Environment.GetEnvironmentVariable("HOME"), "/.jxshell/");
+				//environment.environmentPath = string.Concat(environment.addBs(Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))), ".jxshell\\");
+				environment.environmentPath = string.Concat(Environment.GetEnvironmentVariable("USERPROFILE"), "/kodnet/");
 			}
 			else
 			{
-				environment.environmentPath = string.Concat(environment.addBs(Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))), ".jxshell\\");
+				environment.environmentPath = string.Concat(Environment.GetEnvironmentVariable("HOME"), "/kodnet/");
 			}
-			environment.commonLibraryPath = string.Concat(environment.addBs(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)), "70/library/");
-			environment.commonApplicationsPath = string.Concat(environment.addBs(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)), "70/applications/");
+			
+			var commonPath = string.Concat(environment.addBs(environment.environmentPath), "common");
+			environment.commonLibraryPath = string.Concat(environment.addBs(environment.environmentPath), "common/library/");
+			environment.commonApplicationsPath = string.Concat(environment.addBs(environment.environmentPath), "common/applications/");
 			environment.libraryPath = string.Concat(environment.environmentPath, "library/");
 			environment.appdataPath = string.Concat(environment.environmentPath, "appdata/");
 			environment.compilationPath = string.Concat(environment.environmentPath, "compilation/");
 			environment.applicationsPath = string.Concat(environment.environmentPath, "applications/");
 			environment.languagePath = string.Concat(environment.libraryPath, "lang/");
 			environment.globalAssemblyPath = string.Concat(environment.environmentPath, "global/");
+			
+			
 			environment.mkDir(environment.environmentPath);
+			environment.mkDir(commonPath);
 			environment.mkDir(environment.libraryPath);
 			environment.mkDir(environment.appdataPath);
 			environment.mkDir(environment.compilationPath);
@@ -228,29 +234,38 @@ namespace jxshell
 			environment.loadAssembly(Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.Binder)), true);
 			environment.loadAssemblyPartialName("System.Core");
 			environment.directories.Add(environment.appdataPath);
-			ResolveEventHandler resolveEventHandler = (object s, ResolveEventArgs e) => {
-				Assembly executingAssembly;
+			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler((object s, ResolveEventArgs e) => {
 				Assembly assembly;
-				if (e.Name != "System")
+				Assembly assembly1;
+				if (e.Name == "System")
+				{
+					assembly = typeof(WebRequest).Assembly;
+				}
+				else
 				{
 					string name = (new AssemblyName(e.Name)).Name;
-					if (!name.ToLower().EndsWith(".resources"))
+					if (name.ToLower().EndsWith(".resources"))
+					{
+						name = name.Substring(0, name.Length - ".resources".Length);
+						assembly = Assembly.GetExecutingAssembly();
+					}
+					else
 					{
 						if (environment.unix)
 						{
-							Assembly assembly1 = null;
+							Assembly assembly2 = null;
 							try
 							{
-								assembly1 = Assembly.Load(name);
+								assembly2 = Assembly.Load(name);
 							}
 							catch
 							{
 							}
-							if (assembly1 != null)
+							if (assembly2 != null)
 							{
-								executingAssembly = assembly1;
-								assembly = executingAssembly;
-								return assembly;
+								assembly = assembly2;
+								assembly1 = assembly;
+								return assembly1;
 							}
 						}
 						string str = name;
@@ -271,16 +286,16 @@ namespace jxshell
 										{
 											bool flag = true;
 											int num = 0;
-											while (!File.Exists(str1) && flag)
+											while (!File.Exists(str1) & flag)
 											{
-												if (environment.directories.Count != num)
+												if (environment.directories.Count == num)
 												{
-													str1 = string.Format(string.Concat(environment.addBs(environment.directories[num]), "{0}.dll"), str);
-													num++;
+													flag = false;
 												}
 												else
 												{
-													flag = false;
+													str1 = string.Format(string.Concat(environment.addBs(environment.directories[num]), "{0}.dll"), str);
+													num++;
 												}
 											}
 										}
@@ -288,22 +303,12 @@ namespace jxshell
 								}
 							}
 						}
-						executingAssembly = Assembly.LoadFrom(str1);
-					}
-					else
-					{
-						name = name.Substring(0, name.Length - ".resources".Length);
-						executingAssembly = Assembly.GetExecutingAssembly();
+						assembly = Assembly.LoadFrom(str1);
 					}
 				}
-				else
-				{
-					executingAssembly = typeof(WebRequest).Assembly;
-				}
-				assembly = executingAssembly;
-				return assembly;
-			};
-			AppDomain.CurrentDomain.AssemblyResolve += resolveEventHandler;
+				assembly1 = assembly;
+				return assembly1;
+			});
 		}
 
 		public static void loadAssembly(string name)
@@ -350,14 +355,14 @@ namespace jxshell
 				{
 					string str1 = strArrays[num];
 					str = string.Format(string.Concat(environment.addBs(str1), "{0}.dll"), fileNameWithoutExtension);
-					if (!File.Exists(str))
+					if (File.Exists(str))
 					{
-						str = "";
-						num++;
+						break;
 					}
 					else
 					{
-						break;
+						str = "";
+						num++;
 					}
 				}
 			}

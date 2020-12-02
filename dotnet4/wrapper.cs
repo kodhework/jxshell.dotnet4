@@ -23,7 +23,11 @@ namespace jxshell.dotnet4
 
         public virtual void dispose()
         {
-            wrappedObject = null;
+			if (!(wrappedObject is null) && (wrappedObject is IDisposable))
+			{
+				((IDisposable)wrappedObject).Dispose();
+			}
+			wrappedObject = null;
             wrappedType = null;
             typeD = null;
         }

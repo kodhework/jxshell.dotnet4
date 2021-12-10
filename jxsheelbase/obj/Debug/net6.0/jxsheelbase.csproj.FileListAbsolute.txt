@@ -1,0 +1,11 @@
+D:\jxshell.net6\jxsheelbase\obj\Debug\net6.0\jxsheelbase.GeneratedMSBuildEditorConfig.editorconfig
+D:\jxshell.net6\jxsheelbase\obj\Debug\net6.0\jxsheelbase.AssemblyInfoInputs.cache
+D:\jxshell.net6\jxsheelbase\obj\Debug\net6.0\jxsheelbase.AssemblyInfo.cs
+D:\jxshell.net6\jxsheelbase\obj\Debug\net6.0\jxsheelbase.csproj.CoreCompileInputs.cache
+D:\jxshell.net6\jxsheelbase\bin\Debug\net6.0\jxsheelbase.deps.json
+D:\jxshell.net6\jxsheelbase\bin\Debug\net6.0\jxsheelbase.dll
+D:\jxshell.net6\jxsheelbase\bin\Debug\net6.0\ref\jxsheelbase.dll
+D:\jxshell.net6\jxsheelbase\bin\Debug\net6.0\jxsheelbase.pdb
+D:\jxshell.net6\jxsheelbase\obj\Debug\net6.0\jxsheelbase.dll
+D:\jxshell.net6\jxsheelbase\obj\Debug\net6.0\ref\jxsheelbase.dll
+D:\jxshell.net6\jxsheelbase\obj\Debug\net6.0\jxsheelbase.pdb

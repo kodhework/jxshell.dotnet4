@@ -1,0 +1,15 @@
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\jxshell.net6.csproj.AssemblyReference.cache
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\jxshell.net6.GeneratedMSBuildEditorConfig.editorconfig
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\jxshell.net6.AssemblyInfoInputs.cache
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\jxshell.net6.AssemblyInfo.cs
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\jxshell.net6.csproj.CoreCompileInputs.cache
+D:\jxshell.net6\jxshell.net6\jxshell.net6\bin\Debug\net6.0\jxshell.net6.deps.json
+D:\jxshell.net6\jxshell.net6\jxshell.net6\bin\Debug\net6.0\jxshell.net6.dll
+D:\jxshell.net6\jxshell.net6\jxshell.net6\bin\Debug\net6.0\ref\jxshell.net6.dll
+D:\jxshell.net6\jxshell.net6\jxshell.net6\bin\Debug\net6.0\jxshell.net6.pdb
+D:\jxshell.net6\jxshell.net6\jxshell.net6\bin\Debug\net6.0\jxsheelbase.dll
+D:\jxshell.net6\jxshell.net6\jxshell.net6\bin\Debug\net6.0\jxsheelbase.pdb
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\jxshell.net6.csproj.CopyComplete
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\jxshell.net6.dll
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\ref\jxshell.net6.dll
+D:\jxshell.net6\jxshell.net6\jxshell.net6\obj\Debug\net6.0\jxshell.net6.pdb

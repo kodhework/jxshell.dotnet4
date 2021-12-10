@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "7EHp2AXMvT6oNOPi7Xnu7evU9eXj8qUhCxPvNs7dKRJP7oxzBfR4uxgO7+ByF53jpOUzG3kAE6s6GPm0uIe7DA==",
+  "success": true,
+  "projectFilePath": "D:\\jxshell.net6\\jxshell.register\\jxshell.register.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Uuario\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
+    "C:\\Users\\Uuario\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

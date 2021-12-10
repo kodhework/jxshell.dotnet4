@@ -5,11 +5,11 @@ using System.Text;
 
 namespace jxshell.register
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            jxshell.dotnet4.SelfRegister.Register(typeof(jxshell.dotnet4.Manager));
+            jxshell.net6.SelfRegister.Register(typeof(jxshell.net6.Manager));
         }
     }
 }

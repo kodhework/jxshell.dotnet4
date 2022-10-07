@@ -1,4 +1,4 @@
-using jxshell;
+﻿using jxshell;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -111,7 +111,23 @@ namespace jxshell.dotnet4
 			object o2 = Convert.ChangeType(o, type);
 			return jxshell.dotnet4.wrapper.createWrapper(o2, typeDescriptor.loadFromType(type));
 		}
+		
+		
+		public jxshell.dotnet4.wrapper castObject(object o, object xt)
+		{
+			Type type;
+			type = (!(xt is jxshell.dotnet4.wrapper) ? this.getTypeOrGenericType(xt.ToString()) : (Type)((jxshell.dotnet4.wrapper)xt).wrappedObject);
+			return jxshell.dotnet4.wrapper.createWrapper(o, typeDescriptor.loadFromType(type));
+		}
+		
+		public jxshell.dotnet4.wrapper convertObject(object o, object type)
+		{
+			return getObjectAsType(o, type);
+		}
 
+		
+		
+		
 		public wrapperStatic getStaticWrapper(string typeName)
 		{
 			return wrapperStatic.loadFromType(this.getTypeOrGenericType(typeName));

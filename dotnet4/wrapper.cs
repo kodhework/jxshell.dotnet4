@@ -3,6 +3,20 @@ using System.Runtime.InteropServices;
 
 namespace jxshell.dotnet4
 {
+	
+	
+	[System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Struct)]  
+	public class UnwrappedAttribute : System.Attribute  
+	{  
+		
+		internal bool value = false; 
+	    public UnwrappedAttribute(bool value)  
+	    {  
+	    	this.value = value; 
+	    }  
+	}
+
+
 	[ComVisible(true)]
 	public class wrapper : wrapperBase
 	{
@@ -23,7 +37,7 @@ namespace jxshell.dotnet4
 
         public virtual void dispose()
         {
-			if (!(wrappedObject is null) && (wrappedObject is IDisposable))
+			if ((wrappedObject != null) && (wrappedObject is IDisposable))
 			{
 				((IDisposable)wrappedObject).Dispose();
 			}
@@ -108,6 +122,12 @@ namespace jxshell.dotnet4
 			{
 				return o;
 			}
+			
+			var uw = Attribute.GetCustomAttribute(o.GetType(), typeof(UnwrappedAttribute));
+			if(uw != null){
+				return o; 
+			}
+				
 			return wrapper.createWrapper(o);
 		}
 

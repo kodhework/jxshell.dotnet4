@@ -1,1 +1,5 @@
 .vs 
+
+**/bin/Release
+**/mono_crash*
+**/.bak

@@ -147,7 +147,8 @@
       <AutoGen>false</AutoGen>
       <DesignTimeSharedInput>false</DesignTimeSharedInput>
     </Compile>
-    
+    <Compile Include="tsclient\_home_james\projects\jxshell.dotnet4\dotnet4\DynamicObject.cs" />
+    <Compile Include="tsclient\_home_james\projects\jxshell.dotnet4\dotnet4\DynamicValue.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="jxsheelbase\jxshellbase.csproj">
